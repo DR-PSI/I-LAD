@@ -82,19 +82,19 @@
       </div>
     </section>
 
-    <section style="background:linear-gradient(rgba(255,255,255,0.6),rgba(255,255,255,0.6)),url('assets/sld-bg.jpg');background-size:cover;background-position:center;border:1px solid #E2DFD8;padding:24px;margin-bottom:16px;overflow-x:auto">
+    <section style="background:linear-gradient(rgba(255,255,255,0.75),rgba(255,255,255,0.75)),url('assets/sld-bg.jpg');background-size:cover;background-position:center;border:1px solid #E2DFD8;padding:24px;margin-bottom:16px;overflow-x:auto">
       <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:24px;flex-wrap:wrap;gap:8px">
-        <span style="font-size:14px;font-weight:600">Single-Line Diagram <span style="color:#6B6E73;font-weight:400">· ผังเส้นเดี่ยว</span></span>
-        <span style="font-size:11px;color:#6B6E73;font-family:'IBM Plex Mono',monospace">FORWARD = ออกปกติ · REVERSE = ไหลย้อนกลับ</span>
+        <span style="font-size:14px;font-weight:700;color:#17191C">Single-Line Diagram <span style="color:#3F4247;font-weight:600">· ผังเส้นเดี่ยว</span></span>
+        <span style="font-size:11px;color:#3F4247;font-weight:600;font-family:'IBM Plex Mono',monospace">FORWARD = ออกปกติ · REVERSE = ไหลย้อนกลับ</span>
       </div>
 
       <!-- แถวมิเตอร์จ่ายไฟ + บัสบาร์ -->
       <div style="display:flex;align-items:center;min-width:280px;gap:10px">
         <div style="display:flex;flex-direction:column;align-items:center;flex:none">
-          <div style="font-size:9px;color:#6B6E73;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:6px">Utility</div>
-          <div style="width:1.5px;height:14px;background:#B9B4A8"></div>
-          <div style="width:26px;height:14px;border-radius:2px;border:1.5px solid #8A8577;background:#fff"></div>
-          <div style="width:1.5px;height:14px;background:#B9B4A8"></div>
+          <div style="font-size:9px;color:#3F4247;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:6px">Utility</div>
+          <div style="width:2px;height:14px;background:#17191C"></div>
+          <div style="width:26px;height:14px;border-radius:2px;border:2px solid #17191C;background:#fff"></div>
+          <div style="width:2px;height:14px;background:#17191C"></div>
         </div>
         <div style="width:56px;flex:none;background:#181A1D;border:1px solid #000;border-radius:7px;padding:5px 5px 6px;box-shadow:0 0 16px -8px {{ feederBorderColor }},0 4px 10px -4px rgba(0,0,0,0.35)">
           <div style="background:#C4CFC0;border-radius:3px;padding:5px 2px 4px;text-align:center">
@@ -113,13 +113,13 @@
       </div>
 
       <div style="display:flex;gap:16px;flex-wrap:wrap;margin:10px 0 30px 80px;align-items:baseline">
-        <div style="font-size:12px;color:#6B6E73;font-family:'IBM Plex Mono',monospace">{{ feederId }}</div>
-        <div style="font-size:11px;color:#6B6E73">{{ childKw }} Total Meter (kW)</div>
+        <div style="font-size:12px;color:#17191C;font-weight:600;font-family:'IBM Plex Mono',monospace">{{ feederId }}</div>
+        <div style="font-size:11px;color:#3F4247;font-weight:600">{{ childKw }} Total Meter (kW)</div>
         <sc-if value="{{ hasFeeder }}" hint-placeholder-val="{{ false }}">
           <a href="#" onClick="{{ clearFeeder }}" style="font-size:11px">ล้างการเลือก</a>
         </sc-if>
         <sc-if value="{{ noFeeder }}" hint-placeholder-val="{{ true }}">
-          <span style="font-size:11px;color:#6B6E73">ยังไม่ได้ตั้งมิเตอร์จ่ายไฟ — คลิกแถวในตารางด้านล่างเพื่อตั้ง</span>
+          <span style="font-size:11px;color:#3F4247;font-weight:600">ยังไม่ได้ตั้งมิเตอร์จ่ายไฟ — คลิกแถวในตารางด้านล่างเพื่อตั้ง</span>
         </sc-if>
       </div>
 
@@ -128,11 +128,11 @@
         <sc-for list="{{ children }}" as="c" hint-placeholder-count="3">
           <div onClick="{{ c.open }}" style="display:flex;flex-direction:column;align-items:center;width:148px;cursor:pointer;opacity:{{ c.dim }}">
 
-            <div style="width:1.5px;height:14px;background:#B9B4A8"></div>
-            <div style="width:26px;height:14px;border-radius:2px;border:1.5px solid #8A8577;background:#fff"></div>
+            <div style="width:2px;height:14px;background:#17191C"></div>
+            <div style="width:26px;height:14px;border-radius:2px;border:2px solid #17191C;background:#fff"></div>
 
             <div style="position:relative;width:16px;height:26px">
-              <div style="position:absolute;left:50%;top:0;bottom:0;width:1.5px;background:#D6D2C8;transform:translateX(-50%)"></div>
+              <div style="position:absolute;left:50%;top:0;bottom:0;width:2px;background:#17191C;transform:translateX(-50%)"></div>
               <div style="position:absolute;left:50%;top:0;width:6px;height:6px;border-radius:50%;background:{{ c.flowColor }};box-shadow:0 0 6px {{ c.flowColor }};transform:translateX(-50%);animation:{{ c.dotAnim }} 1.3s linear infinite"></div>
               <div style="position:absolute;left:50%;top:0;width:6px;height:6px;border-radius:50%;background:{{ c.flowColor }};box-shadow:0 0 6px {{ c.flowColor }};transform:translateX(-50%);animation:{{ c.dotAnim }} 1.3s linear infinite;animation-delay:-0.65s"></div>
             </div>
@@ -155,11 +155,11 @@
             <div style="width:0;height:0;border-left:7px solid transparent;border-right:7px solid transparent;border-top:11px solid {{ c.flowColor }}"></div>
 
             <div style="text-align:center;margin-top:12px">
-              <div style="font-size:13px;font-weight:600;color:#17191C">{{ c.label }}</div>
-              <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#6B6E73;margin-bottom:6px">{{ c.subline }}</div>
+              <div style="font-size:13px;font-weight:700;color:#17191C">{{ c.label }}</div>
+              <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#3F4247;font-weight:600;margin-bottom:6px">{{ c.subline }}</div>
               <div style="display:flex;gap:14px;justify-content:center;margin-top:2px">
-                <div><div style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:#17191C">{{ c.kwh }}</div><div style="font-size:9px;color:#6B6E73">kWh</div></div>
-                <div><div style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:#17191C">{{ c.pf }}</div><div style="font-size:9px;color:#6B6E73">PF</div></div>
+                <div><div style="font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:700;color:#17191C">{{ c.kwh }}</div><div style="font-size:9px;color:#3F4247;font-weight:600">kWh</div></div>
+                <div><div style="font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:700;color:#17191C">{{ c.pf }}</div><div style="font-size:9px;color:#3F4247;font-weight:600">PF</div></div>
               </div>
               <div style="display:inline-block;margin-top:8px;padding:2px 9px;font-size:10px;font-weight:600;color:{{ c.flowColor }};border:1px solid {{ c.flowColor }};border-radius:20px;font-family:'IBM Plex Mono',monospace;letter-spacing:0.03em">{{ c.dirLabel }}</div>
             </div>
