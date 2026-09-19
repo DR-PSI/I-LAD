@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  html, body { margin: 0; padding: 0; background: #F4F3EF; }
+  body { font-family: 'IBM Plex Sans Thai', system-ui, sans-serif; color: #17191C; -webkit-font-smoothing: antialiased; }
+  * { box-sizing: border-box; }
+  a { color: #1F4E79; text-decoration: none; }
+  a:hover { color: #C3341C; }
+  table { border-collapse: collapse; }
+</style>
+</helmet>
+
+<div style="min-height:100vh;background:#F4F3EF;padding:0 0 64px">
+
+  <header style="position:sticky;top:0;z-index:30;background:#FFFFFF;border-bottom:1px solid #E2DFD8">
+    <div style="max-width:1220px;margin:0 auto;padding:14px 20px;display:flex;align-items:center;gap:20px;flex-wrap:wrap">
+      <div style="display:flex;align-items:baseline;gap:10px">
+        <span style="font-size:19px;font-weight:700;letter-spacing:0.14em">IRONEYE</span>
+        <span style="font-size:12px;color:#6B6E73;letter-spacing:0.06em">เฝ้าระวังการใช้ไฟผิดปกติ · Power Integrity</span>
+      </div>
+      <nav style="display:flex;gap:4px;margin-left:auto">
+        <button onClick="{{ goDash }}" style="{{ tabDash }}">ภาพรวม <span style="opacity:.55;font-size:11px">Overview</span></button>
+        <button onClick="{{ goList }}" style="{{ tabList }}">มิเตอร์ <span style="opacity:.55;font-size:11px">Meters</span></button>
+        <button onClick="{{ goDetail }}" style="{{ tabDetail }}">รายละเอียด <span style="opacity:.55;font-size:11px">Detail</span></button>
+      </nav>
+      <div style="display:flex;align-items:center;gap:8px;padding-left:16px;border-left:1px solid #E2DFD8">
+        <span style="width:7px;height:7px;border-radius:50%;background:#2E6B4F;display:inline-block"></span>
+        <div style="line-height:1.25">
+          <div style="font-size:11px;color:#6B6E73">USR-DR164 → Node-RED → Firestore</div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:12px">อัปเดต {{ lastSync }}</div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <sc-if value="{{ isDash }}" hint-placeholder-val="{{ true }}">
+  <main style="max-width:1220px;margin:0 auto;padding:28px 20px">
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:18px">
+      <div>
+        <h1 style="margin:0;font-size:24px;font-weight:600;letter-spacing:-0.01em">สายป้อน A · หม้อแปลง TR-3</h1>
+        <div style="font-size:13px;color:#6B6E73;margin-top:4px">Feeder A · 3-phase 400/230 V · PAC 3200 × 8 บน RS485 → PUSR USR-DR164 (WiFi Modbus gateway) → Node-RED → Firestore</div>
+      </div>
+      <div style="font-size:12px;color:#6B6E73;font-family:'IBM Plex Mono',monospace">รอบข้อมูล 24 ชม. · 08:00–08:00</div>
+    </div>
+
+    <section style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-bottom:14px">
+      <div style="background:#fff;border:1px solid #E2DFD8;padding:20px">
+        <div style="font-size:12px;color:#6B6E73;letter-spacing:0.04em">พลังงานเข้าสายป้อน <span style="opacity:.7">Energy in</span></div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:38px;font-weight:600;line-height:1.1;margin-top:8px">{{ energyIn }}</div>
+        <div style="font-size:12px;color:#6B6E73">kWh · มิเตอร์ต้นทาง</div>
+      </div>
+      <div style="background:#fff;border:1px solid #E2DFD8;padding:20px">
+        <div style="font-size:12px;color:#6B6E73;letter-spacing:0.04em">รวมมิเตอร์ลูก <span style="opacity:.7">Billed sum</span></div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:38px;font-weight:600;line-height:1.1;margin-top:8px">{{ energyOut }}</div>
+        <div style="font-size:12px;color:#6B6E73">kWh · 8 มิเตอร์</div>
+      </div>
+      <div style="background:#fff;border:1px solid #E2DFD8;padding:20px;border-left:3px solid {{ lossColor }}">
+        <div style="font-size:12px;color:#6B6E73;letter-spacing:0.04em">ส่วนต่าง / Loss</div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:38px;font-weight:600;line-height:1.1;margin-top:8px;color:{{ lossColor }}">{{ lossPct }}%</div>
+        <div style="font-size:12px;color:#6B6E73">{{ lossKwh }} kWh · เกณฑ์เตือน {{ threshold }}%</div>
+      </div>
+      <div style="background:#fff;border:1px solid #E2DFD8;padding:20px">
+        <div style="font-size:12px;color:#6B6E73;letter-spacing:0.04em">แจ้งเตือนเปิดอยู่ <span style="opacity:.7">Open alerts</span></div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:38px;font-weight:600;line-height:1.1;margin-top:8px">{{ alertCount }}</div>
+        <div style="font-size:12px;color:#6B6E73">{{ alertSummary }}</div>
+      </div>
+    </section>
+
+    <section style="background:#fff;border:1px solid #E2DFD8;padding:20px;margin-bottom:14px">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+        <div style="font-size:14px;font-weight:600">สมดุลพลังงาน · Energy balance</div>
+        <div style="font-size:12px;color:#6B6E73">ต้นทางลบผลรวมลูก = ส่วนต่างที่หายไปในสายป้อน</div>
+      </div>
+      <div style="display:flex;height:34px;border:1px solid #E2DFD8;overflow:hidden">
+        <div style="width:{{ billedWidth }};background:#1F4E79;display:flex;align-items:center;padding:0 12px;color:#fff;font-family:'IBM Plex Mono',monospace;font-size:12px">คิดหน่วยแล้ว {{ energyOut }} kWh</div>
+        <div style="flex:1;background:{{ lossColor }};display:flex;align-items:center;padding:0 12px;color:#fff;font-family:'IBM Plex Mono',monospace;font-size:12px">{{ lossKwh }} kWh</div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-top:16px">
+        <div><div style="font-size:11px;color:#6B6E73">กระแสต้นทาง A/B/C</div><div style="font-family:'IBM Plex Mono',monospace;font-size:17px">{{ mainCurrents }}</div></div>
+        <div><div style="font-size:11px;color:#6B6E73">ความไม่สมดุลกระแส</div><div style="font-family:'IBM Plex Mono',monospace;font-size:17px">{{ mainUnbalance }}%</div></div>
+        <div><div style="font-size:11px;color:#6B6E73">PF รวม</div><div style="font-family:'IBM Plex Mono',monospace;font-size:17px">{{ mainPf }}</div></div>
+        <div><div style="font-size:11px;color:#6B6E73">แรงดันเฉลี่ย L-N</div><div style="font-family:'IBM Plex Mono',monospace;font-size:17px">{{ mainVoltage }} V</div></div>
+      </div>
+    </section>
+
+    <section style="display:grid;grid-template-columns:{{ dashCols }};gap:14px">
+      <div style="background:#fff;border:1px solid #E2DFD8">
+        <div style="padding:16px 20px;border-bottom:1px solid #E2DFD8;font-size:14px;font-weight:600">แจ้งเตือนล่าสุด · Alert queue</div>
+        <sc-for list="{{ alerts }}" as="a" hint-placeholder-count="4">
+          <div onClick="{{ a.open }}" style="padding:14px 20px;border-bottom:1px solid #F0EEE8;display:flex;gap:14px;align-items:flex-start;cursor:pointer">
+            <span style="margin-top:5px;width:8px;height:8px;border-radius:50%;flex:none;background:{{ a.color }}"></span>
+            <div style="flex:1;min-width:0">
+              <div style="font-size:14px;font-weight:600">{{ a.title }}</div>
+              <div style="font-size:12px;color:#6B6E73;margin-top:2px">{{ a.detail }}</div>
+            </div>
+            <div style="text-align:right;flex:none">
+              <div style="font-family:'IBM Plex Mono',monospace;font-size:13px">{{ a.meter }}</div>
+              <div style="font-size:11px;color:#6B6E73">{{ a.time }}</div>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+
+      <sc-if value="{{ showMap }}" hint-placeholder-val="{{ true }}">
+      <div style="background:#fff;border:1px solid #E2DFD8">
+        <div style="padding:16px 20px;border-bottom:1px solid #E2DFD8;display:flex;justify-content:space-between;align-items:baseline">
+          <span style="font-size:14px;font-weight:600">ผังพื้นที่ · Site map</span>
+          <span style="font-size:11px;color:#6B6E73">ตำแหน่งตามผังหมู่บ้าน</span>
+        </div>
+        <div style="position:relative;padding:16px">
+          <svg viewBox="0 0 400 300" style="width:100%;display:block;background:#FAF9F6">
+            <rect x="0" y="0" width="400" height="300" fill="#FAF9F6"></rect>
+            <path d="M0 150 H400" stroke="#E2DFD8" stroke-width="22"></path>
+            <path d="M0 150 H400" stroke="#D6D2C8" stroke-width="1" stroke-dasharray="10 10"></path>
+            <path d="M200 0 V300" stroke="#E2DFD8" stroke-width="16"></path>
+            <g fill="none" stroke="#E7E4DC" stroke-width="1">
+              <rect x="24" y="36" width="70" height="78"></rect>
+              <rect x="112" y="36" width="70" height="78"></rect>
+              <rect x="222" y="36" width="70" height="78"></rect>
+              <rect x="310" y="36" width="70" height="78"></rect>
+              <rect x="24" y="186" width="70" height="78"></rect>
+              <rect x="112" y="186" width="70" height="78"></rect>
+              <rect x="222" y="186" width="70" height="78"></rect>
+              <rect x="310" y="186" width="70" height="78"></rect>
+            </g>
+            <g stroke="#C9C4B8" stroke-width="1" stroke-dasharray="4 4">
+              <path d="M59 150 V75 M147 150 V75 M257 150 V75 M345 150 V75"></path>
+              <path d="M59 150 V225 M147 150 V225 M257 150 V225 M345 150 V225"></path>
+            </g>
+            <rect x="188" y="138" width="24" height="24" fill="#17191C"></rect>
+            <text x="200" y="154" text-anchor="middle" fill="#fff" font-size="10" font-family="IBM Plex Mono, monospace">TR</text>
+          </svg>
+          <sc-for list="{{ pins }}" as="p" hint-placeholder-count="8">
+            <button onClick="{{ p.open }}" title="{{ p.label }}" style="position:absolute;left:{{ p.x }};top:{{ p.y }};transform:translate(-50%,-50%);width:30px;height:30px;border-radius:50%;border:2px solid #fff;background:{{ p.color }};color:#fff;font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:600;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.25)">{{ p.short }}</button>
+          </sc-for>
+        </div>
+      </div>
+      </sc-if>
+    </section>
+  </main>
+  </sc-if>
+
+  <sc-if value="{{ isList }}" hint-placeholder-val="{{ true }}">
+  <main style="max-width:1220px;margin:0 auto;padding:28px 20px">
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:18px">
+      <div>
+        <h1 style="margin:0;font-size:24px;font-weight:600">มิเตอร์ทั้งหมด <span style="font-size:15px;color:#6B6E73;font-weight:400">All meters</span></h1>
+        <div style="font-size:13px;color:#6B6E73;margin-top:4px">เรียงตามคะแนนความเสี่ยง · sorted by risk score</div>
+      </div>
+      <input value="{{ query }}" onInput="{{ onQuery }}" placeholder="ค้นหาบ้านเลขที่ / รหัสมิเตอร์" style="font-family:'IBM Plex Sans Thai',sans-serif;font-size:14px;padding:10px 14px;border:1px solid #E2DFD8;background:#fff;min-width:260px;color:#17191C" />
+    </div>
+
+    <div style="background:#fff;border:1px solid #E2DFD8;overflow-x:auto">
+      <table style="width:100%;min-width:900px;font-size:14px">
+        <thead>
+          <tr style="background:#FAF9F6;text-align:left">
+            <th style="padding:12px 16px;font-size:11px;font-weight:600;color:#6B6E73;letter-spacing:0.06em;border-bottom:1px solid #E2DFD8">มิเตอร์ / METER</th>
+            <th style="padding:12px 16px;font-size:11px;font-weight:600;color:#6B6E73;letter-spacing:0.06em;border-bottom:1px solid #E2DFD8">บ้าน / HOUSE</th>
+            <th style="padding:12px 16px;font-size:11px;font-weight:600;color:#6B6E73;letter-spacing:0.06em;border-bottom:1px solid #E2DFD8;text-align:right">kW</th>
+            <th style="padding:12px 16px;font-size:11px;font-weight:600;color:#6B6E73;letter-spacing:0.06em;border-bottom:1px solid #E2DFD8;text-align:right">PF</th>
+            <th style="padding:12px 16px;font-size:11px;font-weight:600;color:#6B6E73;letter-spacing:0.06em;border-bottom:1px solid #E2DFD8;text-align:right">UNBAL %</th>
+            <th style="padding:12px 16px;font-size:11px;font-weight:600;color:#6B6E73;letter-spacing:0.06em;border-bottom:1px solid #E2DFD8">24 ชม.</th>
+            <th style="padding:12px 16px;font-size:11px;font-weight:600;color:#6B6E73;letter-spacing:0.06em;border-bottom:1px solid #E2DFD8">สถานะ / STATUS</th>
+            <th style="padding:12px 16px;font-size:11px;font-weight:600;color:#6B6E73;letter-spacing:0.06em;border-bottom:1px solid #E2DFD8;text-align:right">RISK</th>
+          </tr>
+        </thead>
+        <tbody>
+          <sc-for list="{{ rows }}" as="r" hint-placeholder-count="8">
+            <tr onClick="{{ r.open }}" style="cursor:pointer;border-bottom:1px solid #F0EEE8">
+              <td style="padding:14px 16px;font-family:'IBM Plex Mono',monospace">{{ r.id }}</td>
+              <td style="padding:14px 16px">{{ r.house }}<div style="font-size:11px;color:#6B6E73">{{ r.owner }}</div></td>
+              <td style="padding:14px 16px;text-align:right;font-family:'IBM Plex Mono',monospace;font-size:16px">{{ r.kw }}</td>
+              <td style="padding:14px 16px;text-align:right;font-family:'IBM Plex Mono',monospace">{{ r.pf }}</td>
+              <td style="padding:14px 16px;text-align:right;font-family:'IBM Plex Mono',monospace">{{ r.unbal }}</td>
+              <td style="padding:14px 16px">
+                <svg viewBox="0 0 120 28" style="width:120px;height:28px;display:block">
+                  <path d="{{ r.baseline }}" fill="none" stroke="#D6D2C8" stroke-width="1.5"></path>
+                  <path d="{{ r.spark }}" fill="none" stroke="{{ r.color }}" stroke-width="1.8"></path>
+                </svg>
+              </td>
+              <td style="padding:14px 16px">
+                <span style="display:inline-block;padding:3px 9px;font-size:12px;color:#fff;background:{{ r.color }}">{{ r.status }}</span>
+              </td>
+              <td style="padding:14px 16px;text-align:right;font-family:'IBM Plex Mono',monospace;font-size:16px;color:{{ r.color }}">{{ r.risk }}</td>
+            </tr>
+          </sc-for>
+        </tbody>
+      </table>
+    </div>
+    <div style="font-size:12px;color:#6B6E73;margin-top:12px">เส้นเทา = baseline เฉลี่ย 30 วันของบ้านนั้น · เส้นสี = การใช้ไฟจริง 24 ชม.</div>
+  </main>
+  </sc-if>
+
+  <sc-if value="{{ isDetail }}" hint-placeholder-val="{{ true }}">
+  <main style="max-width:1220px;margin:0 auto;padding:28px 20px">
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:18px">
+      <div>
+        <div style="font-size:12px;color:#6B6E73;font-family:'IBM Plex Mono',monospace">{{ sel.id }} · SENTRON PAC 3200 · Modbus/TCP</div>
+        <h1 style="margin:4px 0 0;font-size:24px;font-weight:600">{{ sel.house }} <span style="font-size:15px;color:#6B6E73;font-weight:400">{{ sel.owner }}</span></h1>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center">
+        <span style="padding:6px 12px;font-size:13px;color:#fff;background:{{ sel.color }}">{{ sel.status }} · risk {{ sel.risk }}</span>
+        <span style="font-size:12px;color:#6B6E73">อ่านล่าสุด {{ sel.lastSeen }}</span>
+      </div>
+    </div>
+
+    <section style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin-bottom:14px">
+      <sc-for list="{{ phases }}" as="ph" hint-placeholder-count="3">
+        <div style="background:#fff;border:1px solid #E2DFD8;padding:20px;border-top:3px solid {{ ph.color }}">
+          <div style="display:flex;justify-content:space-between;align-items:baseline">
+            <span style="font-size:15px;font-weight:600">เฟส {{ ph.name }}</span>
+            <span style="font-size:11px;color:#6B6E73">{{ ph.note }}</span>
+          </div>
+          <div style="display:flex;gap:18px;margin-top:14px;flex-wrap:wrap">
+            <div>
+              <div style="font-family:'IBM Plex Mono',monospace;font-size:30px;font-weight:600;line-height:1.1">{{ ph.v }}</div>
+              <div style="font-size:11px;color:#6B6E73">V L-N</div>
+            </div>
+            <div>
+              <div style="font-family:'IBM Plex Mono',monospace;font-size:30px;font-weight:600;line-height:1.1;color:{{ ph.color }}">{{ ph.i }}</div>
+              <div style="font-size:11px;color:#6B6E73">A</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:18px;margin-top:14px;padding-top:12px;border-top:1px solid #F0EEE8">
+            <div><div style="font-family:'IBM Plex Mono',monospace;font-size:16px">{{ ph.kw }}</div><div style="font-size:11px;color:#6B6E73">kW</div></div>
+            <div><div style="font-family:'IBM Plex Mono',monospace;font-size:16px">{{ ph.pf }}</div><div style="font-size:11px;color:#6B6E73">PF</div></div>
+            <div><div style="font-family:'IBM Plex Mono',monospace;font-size:16px">{{ ph.thd }}%</div><div style="font-size:11px;color:#6B6E73">THD I</div></div>
+          </div>
+        </div>
+      </sc-for>
+    </section>
+
+    <section style="display:grid;grid-template-columns:{{ dashCols }};gap:14px">
+      <div style="background:#fff;border:1px solid #E2DFD8">
+        <div style="padding:16px 20px;border-bottom:1px solid #E2DFD8;font-size:14px;font-weight:600">ผลตรวจจับ 7 เงื่อนไข · Detector results</div>
+        <sc-for list="{{ checks }}" as="c" hint-placeholder-count="7">
+          <div style="padding:13px 20px;border-bottom:1px solid #F0EEE8;display:flex;gap:14px;align-items:flex-start">
+            <span style="margin-top:5px;width:8px;height:8px;border-radius:50%;flex:none;background:{{ c.color }}"></span>
+            <div style="flex:1;min-width:0">
+              <div style="font-size:14px">{{ c.th }}</div>
+              <div style="font-size:11px;color:#6B6E73">{{ c.en }}</div>
+            </div>
+            <div style="text-align:right;flex:none;max-width:45%">
+              <div style="font-family:'IBM Plex Mono',monospace;font-size:13px;color:{{ c.color }}">{{ c.verdict }}</div>
+              <div style="font-size:11px;color:#6B6E73">{{ c.note }}</div>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+
+      <div style="background:#fff;border:1px solid #E2DFD8;padding:20px">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px">
+          <span style="font-size:14px;font-weight:600">การใช้ไฟ 24 ชม. เทียบ baseline</span>
+          <span style="font-size:11px;color:#6B6E73">kW</span>
+        </div>
+        <svg viewBox="0 0 400 160" style="width:100%;height:auto;display:block">
+          <g stroke="#F0EEE8" stroke-width="1">
+            <path d="M0 40 H400 M0 80 H400 M0 120 H400"></path>
+          </g>
+          <path d="{{ sel.baselineBig }}" fill="none" stroke="#D6D2C8" stroke-width="2"></path>
+          <path d="{{ sel.sparkBig }}" fill="none" stroke="{{ sel.color }}" stroke-width="2.5"></path>
+        </svg>
+        <div style="display:flex;gap:16px;font-size:11px;color:#6B6E73;margin-top:8px">
+          <span>00:00</span><span style="margin-left:auto">12:00</span><span style="margin-left:auto">24:00</span>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:18px;padding-top:16px;border-top:1px solid #F0EEE8">
+          <div><div style="font-family:'IBM Plex Mono',monospace;font-size:20px">{{ sel.kwhToday }}</div><div style="font-size:11px;color:#6B6E73">kWh วันนี้</div></div>
+          <div><div style="font-family:'IBM Plex Mono',monospace;font-size:20px">{{ sel.kwhBaseline }}</div><div style="font-size:11px;color:#6B6E73">baseline เฉลี่ย</div></div>
+          <div><div style="font-family:'IBM Plex Mono',monospace;font-size:20px;color:{{ sel.color }}">{{ sel.deviation }}</div><div style="font-size:11px;color:#6B6E73">ส่วนต่าง</div></div>
+        </div>
+        <div style="margin-top:18px;padding:14px;background:#FAF9F6;border:1px solid #F0EEE8">
+          <div style="font-size:12px;color:#6B6E73;margin-bottom:6px">เส้นทางข้อมูล · PAC 3200 → USR-DR164 → Node-RED → Firestore</div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#4A4D52;line-height:1.7">RS485 Modbus RTU 9600 8N1 · slave {{ sel.slave }} · poll 5 s<br>gateway {{ sel.gateway }} · WiFi {{ sel.rssi }} dBm · MQTT {{ sel.topic }}</div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#4A4D52;line-height:1.7;margin-top:8px;padding-top:8px;border-top:1px solid #E7E4DC">register 1–12 V · 13–18 I A/B/C · 25–30 P · 37–42 PF<br>49–54 THD I · 73–74 unbalance · 2801+ kWh tariff</div>
+        </div>
+      </div>
+    </section>
+
+    <div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap">
+      <sc-for list="{{ quickSwitch }}" as="q" hint-placeholder-count="8">
+        <button onClick="{{ q.open }}" style="{{ q.style }}">{{ q.id }}</button>
+      </sc-for>
+    </div>
+  </main>
+  </sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;lossAlertPct&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;default&quot;:6,&quot;min&quot;:2,&quot;max&quot;:15,&quot;step&quot;:0.5,&quot;unit&quot;:&quot;%&quot;,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;การตรวจจับ&quot;},&quot;simulateTheft&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;การตรวจจับ&quot;},&quot;showMap&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;หน้าจอ&quot;}}">
+class Component extends DCLogic {
+  state = { screen: 'dash', sel: 'H-1403', query: '' };
+
+  base() {
+    return [
+      { id: 'H-1401', house: '41/2 ซ.ร่วมใจ 3', owner: 'สมชาย พ.', kw: 2.14, pf: 0.96, unbal: 3.2, kwh: 14.8, kwhBase: 15.3, risk: 6, seed: 3, flags: {} },
+      { id: 'H-1402', house: '41/4 ซ.ร่วมใจ 3', owner: 'ปราณี ก.', kw: 1.02, pf: 0.94, unbal: 4.8, kwh: 8.1, kwhBase: 9.0, risk: 11, seed: 7, flags: {} },
+      { id: 'H-1403', house: '43/1 ซ.ร่วมใจ 3', owner: 'วิชัย ต.', kw: 6.85, pf: 0.71, unbal: 38.4, kwh: 41.2, kwhBase: 12.6, risk: 92, seed: 11,
+        flags: { balance: 'alarm', unbalance: 'alarm', pfthd: 'alarm', baseline: 'alarm', nometer: 'warn' } },
+      { id: 'H-1404', house: '43/3 ซ.ร่วมใจ 3', owner: 'อรพิน ส.', kw: 0.84, pf: 0.92, unbal: 6.1, kwh: 7.4, kwhBase: 7.9, risk: 9, seed: 5, flags: {} },
+      { id: 'H-1405', house: '45/1 ซ.ร่วมใจ 5', owner: 'ธีระ ม.', kw: 3.42, pf: 0.89, unbal: 9.4, kwh: 22.6, kwhBase: 21.1, risk: 34, seed: 13,
+        flags: { nometer: 'warn', pfthd: 'warn' } },
+      { id: 'H-1406', house: '45/3 ซ.ร่วมใจ 5', owner: 'กนกวรรณ ร.', kw: 0.0, pf: 0.0, unbal: 0.0, kwh: 0.0, kwhBase: 11.4, risk: 58, seed: 17,
+        flags: { offline: 'alarm', nometer: 'warn' } },
+      { id: 'H-1407', house: '47/1 ซ.ร่วมใจ 5', owner: 'สุรชัย ว.', kw: 1.96, pf: 0.95, unbal: 5.0, kwh: 13.9, kwhBase: 13.2, risk: 12, seed: 19, flags: {} },
+      { id: 'H-1408', house: '47/5 ซ.ร่วมใจ 5', owner: 'มานพ อ.', kw: 2.68, pf: 0.93, unbal: 7.2, kwh: 17.4, kwhBase: 16.8, risk: 21, seed: 23,
+        flags: { reverse: 'warn' } }
+    ];
+  }
+
+  clean() { return this.props.simulateTheft === false; }
+
+  meters() {
+    const clean = this.clean();
+    return this.base().map(m => {
+      const f = clean ? {} : m.flags;
+      const risk = clean ? Math.min(m.risk, 14) : m.risk;
+      const st = risk >= 70 ? 'alarm' : risk >= 30 ? 'watch' : 'ok';
+      return Object.assign({}, m, {
+        flags: f, risk,
+        kwh: clean && m.kwh === 0 ? m.kwhBase : m.kwh,
+        kw: clean && m.kw === 0 ? 1.3 : m.kw,
+        pf: clean ? Math.max(m.pf, 0.9) : m.pf,
+        unbal: clean ? Math.min(m.unbal, 7) : m.unbal,
+        level: st,
+        color: st === 'alarm' ? '#C3341C' : st === 'watch' ? '#A87208' : '#2E6B4F',
+        statusTh: st === 'alarm' ? 'สงสัยขโมยไฟ' : st === 'watch' ? 'เฝ้าระวัง' : 'ปกติ'
+      });
+    });
+  }
+
+  series(seed, kwh, hours) {
+    const out = [];
+    for (let h = 0; h < hours; h++) {
+      const day = 0.55 + 0.45 * Math.sin((h - 4) / 24 * Math.PI * 2) + 0.3 * Math.sin((h * seed) % 7);
+      out.push(Math.max(0.05, day * kwh / 14));
+    }
+    return out;
+  }
+
+  path(vals, w, h, max) {
+    const m = max || Math.max.apply(null, vals) || 1;
+    return vals.map((v, i) => (i ? 'L' : 'M') + (i / (vals.length - 1) * w).toFixed(1) + ' ' + (h - (v / m) * (h - 3) - 1.5).toFixed(1)).join(' ');
+  }
+
+  pair(m, w, h) {
+    const a = this.series(m.seed, m.kwh, 24);
+    const b = this.series(m.seed + 1, m.kwhBase, 24);
+    const max = Math.max.apply(null, a.concat(b));
+    return { spark: this.path(a, w, h, max), baseline: this.path(b, w, h, max) };
+  }
+
+  phasesFor(m) {
+    const iBase = m.kw * 1000 / (3 * 230 * (m.pf || 1)) || 0;
+    const spread = m.unbal / 100;
+    return ['A', 'B', 'C'].map((n, i) => {
+      const f = 1 + (i === 0 ? spread * 1.6 : i === 1 ? -spread * 0.4 : -spread * 1.2);
+      const cur = Math.max(0, iBase * f);
+      const bad = m.level === 'alarm' && i !== 1;
+      return {
+        name: n, v: (230.4 - i * 1.7 - (bad ? 4.2 : 0)).toFixed(1), i: cur.toFixed(1),
+        kw: (cur * 230 * m.pf / 1000).toFixed(2), pf: (m.pf - (bad ? 0.04 : 0)).toFixed(2),
+        thd: (m.level === 'alarm' ? 18 + i * 2 : m.level === 'watch' ? 9 + i : 4 + i).toFixed(0),
+        color: bad ? '#C3341C' : m.level === 'watch' ? '#A87208' : '#2E6B4F',
+        note: bad ? 'เกินพิกัดสมดุล' : 'อยู่ในเกณฑ์'
+      };
+    });
+  }
+
+  notesFor(m) {
+    const ph = this.phasesFor(m);
+    const dev = m.kwh - m.kwhBase;
+    const pct = m.kwhBase ? dev / m.kwhBase * 100 : 0;
+    const offline = !!m.flags.offline;
+    return {
+      balance: 'ส่วนต่างสายป้อนโยงมาที่จุดนี้ ' + Math.max(0, dev).toFixed(1) + ' kWh',
+      unbalance: 'IA ' + ph[0].i + ' A · IC ' + ph[2].i + ' A (' + m.unbal.toFixed(1) + '%)',
+      reverse: 'P เป็นลบ 6 ช่วง ใน 24 ชม. · PF ' + m.pf.toFixed(2),
+      pfthd: 'PF ' + m.pf.toFixed(2) + ' · THD I ' + ph[0].thd + '%',
+      nometer: offline
+        ? 'หน่วยหยุดเดิน 04:30 น. ก่อนสัญญาณขาด'
+        : 'กระแสค้าง ' + ph[2].i + ' A ขณะหน่วยไม่เดิน',
+      baseline: (pct >= 0 ? 'สูงกว่า' : 'ต่ำกว่า') + 'ค่าเฉลี่ย 30 วัน ' + Math.abs(pct).toFixed(0) + '%',
+      offline: 'ไม่ตอบ Modbus 4 ชม. 12 นาที'
+    };
+  }
+
+  go(screen, sel) { this.setState(sel ? { screen, sel } : { screen }); window.scrollTo(0, 0); }
+
+  renderVals() {
+    const ms = this.meters();
+    const threshold = this.props.lossAlertPct ?? 6;
+    const showMap = this.props.showMap ?? true;
+    const energyOut = ms.reduce((s, m) => s + m.kwh, 0);
+    const energyIn = this.clean() ? energyOut * 1.031 : energyOut + 28.4;
+    const lossKwh = energyIn - energyOut;
+    const lossPct = lossKwh / energyIn * 100;
+    const lossColor = lossPct >= threshold ? '#C3341C' : lossPct >= threshold * 0.7 ? '#A87208' : '#2E6B4F';
+
+    const tab = (on) => 'font-family:inherit;font-size:13px;padding:8px 14px;border:1px solid ' + (on ? '#17191C' : '#E2DFD8') + ';background:' + (on ? '#17191C' : '#fff') + ';color:' + (on ? '#fff' : '#17191C') + ';cursor:pointer;display:flex;gap:6px;align-items:baseline';
+
+    const DET = [
+      { key: 'balance', th: 'สมดุลพลังงานกับมิเตอร์ต้นทาง', en: 'Feeder energy balance' },
+      { key: 'unbalance', th: 'ความไม่สมดุลกระแส / เฟสหาย', en: 'Current unbalance / phase loss' },
+      { key: 'reverse', th: 'พลังงานไหลย้อนกลับ', en: 'Reverse power flow' },
+      { key: 'pfthd', th: 'PF หรือ THD ผิดปกติ', en: 'PF / THD anomaly' },
+      { key: 'nometer', th: 'มีกระแสแต่หน่วยไม่เดิน', en: 'Current without registration' },
+      { key: 'baseline', th: 'เทียบ baseline ย้อนหลัง 30 วัน', en: '30-day baseline deviation' },
+      { key: 'offline', th: 'สัญญาณขาดหาย / ออฟไลน์', en: 'Signal loss' }
+    ];
+    const clr = (s) => s === 'alarm' ? '#C3341C' : s === 'warn' ? '#A87208' : '#2E6B4F';
+    const verdict = (s) => s === 'alarm' ? 'ผิดปกติ' : s === 'warn' ? 'ต้องดู' : 'ผ่าน';
+
+    const alerts = [];
+    ms.forEach(m => {
+      const notes = this.notesFor(m);
+      DET.forEach(d => {
+        const s = m.flags[d.key];
+        if (!s) return;
+        alerts.push({
+          title: d.th, detail: notes[d.key], meter: m.id, time: s === 'alarm' ? '08:42 น.' : '07:15 น.',
+          color: clr(s), open: () => this.go('detail', m.id)
+        });
+      });
+    });
+    alerts.sort((a, b) => (a.color === '#C3341C' ? 0 : 1) - (b.color === '#C3341C' ? 0 : 1));
+
+    const XS = [16, 34, 63, 81, 16, 34, 63, 81];
+    const YS = [26, 26, 26, 26, 76, 76, 76, 76];
+    const pins = ms.map((m, i) => ({
+      x: XS[i] + '%', y: YS[i] + '%', short: m.id.slice(-2), color: m.color,
+      label: m.house + ' · ' + m.statusTh, open: () => this.go('detail', m.id)
+    }));
+
+    const q = (this.state.query || '').trim().toLowerCase();
+    const rows = ms
+      .filter(m => !q || (m.id + m.house + m.owner).toLowerCase().indexOf(q) >= 0)
+      .sort((a, b) => b.risk - a.risk)
+      .map(m => {
+        const p = this.pair(m, 120, 28);
+        return {
+          id: m.id, house: m.house, owner: m.owner, kw: m.kw.toFixed(2), pf: m.pf.toFixed(2),
+          unbal: m.unbal.toFixed(1), status: m.statusTh, risk: m.risk, color: m.color,
+          spark: p.spark, baseline: p.baseline, open: () => this.go('detail', m.id)
+        };
+      });
+
+    const s = ms.find(m => m.id === this.state.sel) || ms[0];
+    const big = this.pair(s, 400, 160);
+    const phases = this.phasesFor(s);
+    const selNotes = this.notesFor(s);
+
+    const checks = DET.map(d => {
+      const st = s.flags[d.key] || 'ok';
+      return { th: d.th, en: d.en, color: clr(st), verdict: verdict(st), note: st === 'ok' ? 'ไม่พบความผิดปกติ' : selNotes[d.key] };
+    });
+
+    const dev = s.kwh - s.kwhBase;
+
+    return {
+      isDash: this.state.screen === 'dash', isList: this.state.screen === 'list', isDetail: this.state.screen === 'detail',
+      goDash: () => this.go('dash'), goList: () => this.go('list'), goDetail: () => this.go('detail'),
+      tabDash: tab(this.state.screen === 'dash'), tabList: tab(this.state.screen === 'list'), tabDetail: tab(this.state.screen === 'detail'),
+      lastSync: '12 วินาทีที่แล้ว',
+      energyIn: energyIn.toFixed(1), energyOut: energyOut.toFixed(1),
+      lossKwh: lossKwh.toFixed(1), lossPct: lossPct.toFixed(1), lossColor, threshold: threshold.toFixed(1),
+      billedWidth: (energyOut / energyIn * 100).toFixed(1) + '%',
+      alertCount: alerts.length,
+      alertSummary: alerts.filter(a => a.color === '#C3341C').length + ' วิกฤต · ' + alerts.filter(a => a.color !== '#C3341C').length + ' เฝ้าระวัง',
+      mainCurrents: '48.2 / 39.6 / 33.1 A', mainUnbalance: this.clean() ? '4.1' : '12.7',
+      mainPf: '0.93', mainVoltage: '230.6',
+      alerts, pins, showMap, rows,
+      dashCols: showMap ? 'minmax(0,1.3fr) minmax(0,1fr)' : '1fr',
+      query: this.state.query,
+      onQuery: (e) => this.setState({ query: e.target.value }),
+      sel: {
+        id: s.id, house: s.house, owner: s.owner, status: s.statusTh, risk: s.risk, color: s.color,
+        lastSeen: s.flags.offline ? '4 ชม. 12 นาทีที่แล้ว' : '12 วินาทีที่แล้ว',
+        sparkBig: big.spark, baselineBig: big.baseline,
+        kwhToday: s.kwh.toFixed(1), kwhBaseline: s.kwhBase.toFixed(1),
+        deviation: (dev >= 0 ? '+' : '') + dev.toFixed(1),
+        slave: String(ms.indexOf(s) + 1).padStart(2, '0'),
+        gateway: 'USR-DR164 · 192.168.1.' + (40 + ms.indexOf(s)),
+        rssi: s.flags.offline ? '—' : String(-52 - ms.indexOf(s) * 3),
+        topic: 'ironeye/feederA/' + s.id.toLowerCase()
+      },
+      phases, checks,
+      quickSwitch: ms.map(m => ({
+        id: m.id, open: () => this.go('detail', m.id),
+        style: 'font-family:IBM Plex Mono,monospace;font-size:12px;padding:7px 12px;cursor:pointer;border:1px solid ' +
+          (m.id === s.id ? '#17191C' : '#E2DFD8') + ';background:' + (m.id === s.id ? '#17191C' : '#fff') +
+          ';color:' + (m.id === s.id ? '#fff' : m.color)
+      }))
+    };
+  }
+}
+</script>
+</body>
+</html>
