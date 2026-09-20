@@ -1,0 +1,13 @@
+{
+  "name": "TiCC",
+  "short_name": "TiCC",
+  "description": "TiCC · Smart & AI Solution — power monitoring",
+  "start_url": "./IronEye Feeder.dc.html",
+  "display": "standalone",
+  "background_color": "#F4F3EF",
+  "theme_color": "#17191C",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
