@@ -11,7 +11,7 @@
 /* ============ ตั้งค่าสี ============ */
 :root{
   --ink:#1C2B3A; --ink-2:#506173; --paper:#EEF2F4; --card:rgba(255,255,255,.92);
-  --brand:#23578F; --solar:#E0A100; --grid:#2F6FB6; --export:#2E9A5E; --load:#8C3D9E; --warn:#C2410C;
+  --brand:#1F5FB0; --solar:#F5A300; --grid:#1E7BFF; --export:#0FB866; --load:#A63DF0; --warn:#E5480E;
   --line:rgba(28,43,58,.12);
   --sans:'IBM Plex Sans Thai',system-ui,-apple-system,'Segoe UI',Tahoma,sans-serif;
   --mono:'IBM Plex Mono',ui-monospace,Consolas,monospace;
@@ -23,7 +23,7 @@
 :root{ box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px); }
 *,*::before,*::after{ box-sizing:inherit; }
 html,body{ height:100%; margin:0; }
-body{ background:linear-gradient(180deg,#DCE6EE 0%,var(--paper) 55%); color:var(--ink); font-family:var(--sans); overflow:hidden; }
+body{ background:linear-gradient(180deg,#5FAEF5 0%,#A9D6FF 38%,#E4F3FF 62%,#EEF6EC 100%); color:var(--ink); font-family:var(--sans); overflow:hidden; }
 @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) body{ background:linear-gradient(180deg,#16212E 0%,var(--paper) 60%); } }
 
 #stage{ position:fixed; inset:0; }
@@ -47,7 +47,7 @@ header{ position:fixed; top:calc(env(safe-area-inset-top,0px) + 16px); left:20px
 .brand p{ margin:2px 0 0; font-size:14px; color:var(--ink-2); }
 .status{ margin-top:8px; display:inline-flex; align-items:center; gap:8px; font-size:13px; padding:4px 10px; border-radius:999px; background:var(--card); border:1px solid var(--line); }
 .status i{ width:8px; height:8px; border-radius:50%; background:#999; }
-.status.live i{ background:var(--export); box-shadow:0 0 0 3px rgba(46,154,94,.2); }
+.status.live i{ background:var(--export); box-shadow:0 0 0 3px rgba(15,184,102,.25); }
 .status.stale i{ background:var(--warn); }
 .status.demo i{ background:var(--solar); }
 .tools{ display:flex; gap:8px; pointer-events:auto; }
@@ -154,10 +154,12 @@ renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.outputEncoding = THREE.sRGBEncoding;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 0.9;
 stage.appendChild(renderer.domElement);
 
 const scene = new THREE.Scene();
-scene.fog = new THREE.Fog(0xDCE6EE, 70, 140);
+scene.fog = new THREE.Fog(0xCFE7FA, 130, 230);
 
 const camera = new THREE.PerspectiveCamera(40, 1, 0.5, 400);
 const narrow = innerWidth < 640;
@@ -175,8 +177,8 @@ controls.maxDistance = 110;
 controls.autoRotate = !reduceMotion;
 controls.autoRotateSpeed = 0.35;
 
-scene.add(new THREE.HemisphereLight(0xEAF2FF, 0x8A8F7A, 0.75));
-const sun = new THREE.DirectionalLight(0xFFF3DD, 0.95);
+scene.add(new THREE.HemisphereLight(0xBFE0FF, 0x6E9E4A, 0.8));
+const sun = new THREE.DirectionalLight(0xFFE2B0, 1.3);
 sun.position.set(-25, 40, 30);
 sun.castShadow = true;
 sun.shadow.mapSize.set(2048, 2048);
@@ -186,11 +188,12 @@ scene.add(sun);
 
 const M = (color, o={}) => new THREE.MeshStandardMaterial(Object.assign({ color, roughness:0.8, metalness:0.05 }, o));
 const mat = {
-  ground:M(0xC9CFC6), road:M(0x8E959B), concrete:M(0xEDEBE6), trim:M(0xBFC5CA), metal:M(0xD8DCE0, {metalness:0.3, roughness:0.5}),
-  roofMetal:M(0xB9C0C7, {metalness:0.35, roughness:0.45}), glass:M(0x7FB3C8, {transparent:true, opacity:0.55, roughness:0.15, metalness:0.2}),
-  frame:M(0x3C4752), door:M(0xC4C9CE, {metalness:0.25}), panel:M(0x1D2C4A, {roughness:0.3, metalness:0.4}),
-  panelFrame:M(0xA9B1B9, {metalness:0.5}), white:M(0xF4F5F6), cabinet:M(0x9AA3AB, {metalness:0.3}),
-  pole:M(0x9C9A92), leaf:M(0x6E9A5B), trunk:M(0x7A5C40), screen:M(0x2B3A2E, {emissive:0x6BCB77, emissiveIntensity:0.35})
+  ground:M(0x2F8F22, {roughness:1}), road:M(0x3B434D, {roughness:0.9}), concrete:M(0xF1ECE2), trim:M(0xC9D2DC), metal:M(0xD5DEE8, {metalness:0.25, roughness:0.45}),
+  roofMetal:M(0x34404E, {metalness:0.5, roughness:0.42}), rib:M(0x46556A, {metalness:0.55, roughness:0.35}), roofSlab:M(0x39434E, {roughness:0.85}), glass:M(0x2A8FE0, {transparent:true, opacity:0.72, roughness:0.05, metalness:0.55, emissive:0x0B3E73, emissiveIntensity:0.25}),
+  frame:M(0x26313D), door:M(0xBFC9D3, {metalness:0.35}), panel:M(0x0D2660, {roughness:0.28, metalness:0.35, emissive:0x041438, emissiveIntensity:0.25}), cell:M(0x5D7BB8, {roughness:0.4}),
+  panelFrame:M(0xC7CFD7, {metalness:0.7, roughness:0.3}), white:M(0xFFFFFF), cabinet:M(0x8E9AA6, {metalness:0.4}),
+  pole:M(0xA8A59C), leaf:M(0x3FAE49, {roughness:0.7}), leaf2:M(0x7CC63E, {roughness:0.7}), trunk:M(0x7A4E2D), screen:M(0x1C3A24, {emissive:0x3CFF7A, emissiveIntensity:0.8}),
+  stripe:M(0xFFFFFF, {roughness:0.6}), accent:M(0xF07A1A, {roughness:0.5})
 };
 
 function box(w,h,d,m,x,y,z,parent=scene){
@@ -203,13 +206,18 @@ function box(w,h,d,m,x,y,z,parent=scene){
 const ground = new THREE.Mesh(new THREE.PlaneGeometry(160,160), mat.ground);
 ground.rotation.x = -Math.PI/2; ground.receiveShadow = true; scene.add(ground);
 box(160, 0.05, 9, mat.road, 0, 0.03, 19);
-box(14, 0.06, 8, mat.trim, -10, 0.04, 11.5);   // ลานหน้าโกดัง
+box(14, 0.06, 8, mat.road, -10, 0.04, 11.5);   // ลานหน้าโกดัง
 box(10, 0.06, 6, mat.trim, 7, 0.04, 9.5);      // ลานหน้าออฟฟิศ
+for (let i=-7;i<=7;i++) box(3, 0.02, 0.25, mat.stripe, i*10, 0.07, 19);   // เส้นถนน
 
 /* ---------- อาคารสำนักงาน 2 ชั้น ---------- */
 const OX = 7;
 box(18, 8, 12, mat.concrete, OX, 4, 0);
 box(18.4, 0.6, 12.4, mat.trim, OX, 8.3, 0);                 // parapet
+box(18.5, 0.18, 0.1, mat.accent, OX, 8.55, 6.22);           // แถบสีแบรนด์
+box(17.4, 0.12, 11.4, mat.roofSlab, OX, 8.62, 0);            // พื้นหลังคาสำนักงาน
+box(2.4, 1.0, 1.6, mat.cabinet, OX+5, 9.2, -2.5);            // แอร์บนหลังคา
+box(2.4, 1.0, 1.6, mat.cabinet, OX+2, 9.2, -2.5);
 for (let f=0; f<2; f++){
   const y = 1.9 + f*4;
   box(15.5, 3.0, 0.15, mat.glass, OX+0.8, y, 6.05);         // กระจกหน้า
@@ -233,6 +241,18 @@ roofGeo.rotateY(Math.PI/2);
 const roof = new THREE.Mesh(roofGeo, mat.roofMetal);
 roof.position.set(WX-6.3, WH, WZ); roof.castShadow = roof.receiveShadow = true; scene.add(roof);
 
+/* ---------- ลอนหลังคาเมทัลชีท ---------- */
+{
+  const sl = Math.atan2(RISE, WD/2+0.4), len = Math.hypot(RISE, WD/2+0.4);
+  [1,-1].forEach(side => {
+    const g = new THREE.Group();
+    g.position.set(WX, WH + RISE/2 + 0.03, WZ + side*(WD/2+0.4)/2);
+    g.rotation.x = side*sl; scene.add(g);
+    for (let x=-6.1; x<=6.1; x+=0.55) box(0.06, 0.06, len, mat.rib, x, 0, 0, g);
+  });
+  box(12.8, 0.18, 0.3, mat.rib, WX, WH+RISE+0.02, WZ);         // ครอบสันหลังคา
+}
+
 /* ---------- แผงโซลาร์ 18 แผง ≈ 10 kWp บนหลังคาด้านหน้า ---------- */
 const slope = Math.atan2(RISE, WD/2+0.4);
 const pv = new THREE.Group();
@@ -243,6 +263,8 @@ for (let r=0; r<2; r++) for (let c=0; c<9; c++){
   const x = -4.6 + c*1.15, z = -1.25 + r*2.4;
   box(1.08, 0.05, 2.25, mat.panelFrame, x, 0, z, pv);
   box(1.0, 0.06, 2.15, mat.panel, x, 0.01, z, pv);
+  box(0.02, 0.065, 2.1, mat.cell, x, 0.012, z, pv);
+  for (let k=-2;k<=2;k++) box(0.98, 0.065, 0.02, mat.cell, x, 0.012, z + k*0.43, pv);
 }
 
 /* ---------- Inverter, ตู้ MDB, มิเตอร์ IE-01 ---------- */
@@ -264,26 +286,35 @@ tx.position.set(PX+0.6, 7.6, PZ); tx.castShadow = true; scene.add(tx);
 [[18,0,10],[20.5,0,4],[-20,0,-6],[-2,0,13.5],[14,0,-9]].forEach(([x,,z])=>{
   const t = new THREE.Mesh(new THREE.CylinderGeometry(0.15,0.2,2,6), mat.trunk);
   t.position.set(x,1,z); t.castShadow = true; scene.add(t);
-  const l = new THREE.Mesh(new THREE.IcosahedronGeometry(1.4,0), mat.leaf);
+  const l = new THREE.Mesh(new THREE.IcosahedronGeometry(1.4,0), (x+z)%2 ? mat.leaf : mat.leaf2);
   l.position.set(x,2.7,z); l.castShadow = true; scene.add(l);
 });
 
 /* ---------- เส้นทางพลังงาน ---------- */
 const V = (x,y,z) => new THREE.Vector3(x,y,z);
-const COLORS = { solar:0xE0A100, grid:0x2F6FB6, export:0x2E9A5E, load:0x8C3D9E };
+const COLORS = { solar:0xFFB300, grid:0x1E7BFF, export:0x10D070, load:0xB24BFF };
 
-function makePath(points, color){
-  const curve = new THREE.CatmullRomCurve3(points, false, 'centripetal', 0.2);
-  const tube = new THREE.Mesh(new THREE.TubeGeometry(curve, 120, 0.05, 6, false),
-    new THREE.MeshBasicMaterial({ color, transparent:true, opacity:0.35 }));
+function makePath(points, color, opt={}){
+  let curve;
+  if (opt.straight){ curve = new THREE.CurvePath(); for (let i=1;i<points.length;i++) curve.add(new THREE.LineCurve3(points[i-1], points[i])); }
+  else curve = new THREE.CatmullRomCurve3(points, false, 'centripetal', 0.2);
+  const tube = new THREE.Mesh(new THREE.TubeGeometry(curve, opt.straight ? 400 : 120, opt.r || 0.05, 6, false),
+    new THREE.MeshBasicMaterial({ color, transparent:true, opacity:0.55, toneMapped:false }));
   scene.add(tube);
   const N = 36;
-  const dots = new THREE.InstancedMesh(new THREE.SphereGeometry(0.16, 10, 8), new THREE.MeshBasicMaterial({ color }), N);
-  scene.add(dots);
-  return { curve, tube, dots, N, phase:0, kw:0, dir:1 };
+  const dots = new THREE.InstancedMesh(new THREE.SphereGeometry(0.17, 12, 10), new THREE.MeshBasicMaterial({ color, toneMapped:false }), N);
+  const glow = new THREE.InstancedMesh(new THREE.SphereGeometry(0.42, 12, 10),
+    new THREE.MeshBasicMaterial({ color, transparent:true, opacity:0.2, blending:THREE.AdditiveBlending, depthWrite:false, toneMapped:false }), N);
+  scene.add(dots, glow);
+  return { curve, tube, dots, glow, N, phase:0, kw:0, dir:1 };
 }
 const paths = {
-  solar: makePath([V(WX, 8.0, 4.6), V(-5.6, 6.7, FRONT+0.3), V(-5.4, 4.0, FRONT+0.35), V(-5.4, 2.4, FRONT+0.35), V(-6.6, 1.9, FRONT+0.65)], COLORS.solar),
+  // เดินสายจากแผง ลงชายคา ไปมุมตึก แล้วลงตามขอบตึกเข้า inverter และตู้ MDB
+  solar: makePath([
+    V(-5.45, 7.25, 6.95), V(-5.45, 6.62, FRONT+0.42), V(-3.82, 6.62, FRONT+0.42),
+    V(-3.82, 6.45, FRONT+0.1), V(-3.82, 2.2, FRONT+0.1), V(-5.1, 2.2, FRONT+0.18),
+    V(-5.4, 1.55, FRONT+0.32), V(-6.55, 1.55, FRONT+0.65)
+  ], COLORS.solar, { straight:true, r:0.07 }),
   grid:  makePath([V(PX, 9.3, PZ), V(-16, 7.4, 12.5), V(-8.5, 5.5, FRONT+1.0), V(-7.6, 2.1, FRONT+0.65)], COLORS.grid),
   load:  makePath([V(-6.6, 0.4, FRONT+0.75), V(-3, 0.25, 9.6), V(4, 0.25, 8.6), V(OX+2, 0.3, 7.0), V(OX+2, 2.2, 6.3), V(OX, 6, 3)], COLORS.load)
 };
@@ -292,19 +323,20 @@ const tmpM = new THREE.Matrix4(), tmpP = new THREE.Vector3();
 function updatePath(p, dt){
   const active = p.kw > 0.02;
   p.tube.visible = active;
+  p.glow.visible = active;
   if (!active){ p.dots.visible = false; return; }
   p.dots.visible = true;
   const speed = reduceMotion ? 0.02 : 0.05 + Math.min(p.kw, 12) * 0.022;
   p.phase = (p.phase + dt * speed * p.dir + 1) % 1;
   const shown = Math.max(6, Math.round(p.N * Math.min(1, 0.25 + p.kw / 8)));
   for (let i=0; i<p.N; i++){
-    if (i >= shown){ tmpM.makeScale(0,0,0); p.dots.setMatrixAt(i, tmpM); continue; }
+    if (i >= shown){ tmpM.makeScale(0,0,0); p.dots.setMatrixAt(i, tmpM); p.glow.setMatrixAt(i, tmpM); continue; }
     const t = (i / shown + p.phase) % 1;
-    p.curve.getPointAt(t, tmpP);
-    tmpM.makeTranslation(tmpP.x, tmpP.y, tmpP.z);
-    p.dots.setMatrixAt(i, tmpM);
+    const pt = p.curve.getPointAt(t, tmpP) || tmpP;   // CurvePath คืนค่าใหม่ ไม่ใช้ target
+    tmpM.makeTranslation(pt.x, pt.y, pt.z);
+    p.dots.setMatrixAt(i, tmpM); p.glow.setMatrixAt(i, tmpM);
   }
-  p.dots.instanceMatrix.needsUpdate = true;
+  p.dots.instanceMatrix.needsUpdate = true; p.glow.instanceMatrix.needsUpdate = true;
 }
 
 /* ---------- ป้ายลอย ---------- */
@@ -460,6 +492,7 @@ function render(){
   paths.grid.dir = exporting ? -1 : 1;
   const gc = exporting ? COLORS.export : COLORS.grid;
   paths.grid.dots.material.color.setHex(gc);
+  paths.grid.glow.material.color.setHex(gc);
   paths.grid.tube.material.color.setHex(gc);
 }
 
