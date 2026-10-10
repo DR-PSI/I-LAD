@@ -59,6 +59,15 @@ header{ position:fixed; top:calc(env(safe-area-inset-top,0px) + 16px); left:20px
 .term .v small{ font-size:.5em; margin-left:4px; color:var(--ink-2); }
 .term .n{ font-size:12px; color:var(--ink-2); min-height:1.3em; }
 .op{ font-family:var(--mono); font-size:28px; color:var(--ink-2); }
+.bill{ display:grid; grid-template-columns:auto 1fr auto; align-items:end; gap:4px 18px; margin-top:10px; padding:10px 12px; border-radius:10px;
+  background:linear-gradient(90deg, rgba(240,122,26,.12), rgba(240,122,26,.03)); border:1px solid rgba(240,122,26,.28); }
+.bill .k{ font-size:13px; color:var(--ink-2); }
+.bill .amt{ font-family:var(--mono); font-weight:600; font-size:clamp(24px,3.6vw,36px); color:#E46A0C; line-height:1.05; }
+.bill .amt small{ font-size:.5em; color:var(--ink-2); margin-left:4px; }
+.bill .side{ font-size:12.5px; color:var(--ink-2); line-height:1.55; }
+.bill .side b{ font-family:var(--mono); color:var(--ink); font-weight:600; }
+.bill .right{ text-align:right; }
+@media (max-width:640px){ .bill{ grid-template-columns:1fr 1fr; } .bill .main{ grid-column:1 / -1; } .bill .right{ text-align:left; } }
 .facts{ display:flex; flex-wrap:wrap; gap:6px 22px; margin-top:10px; padding-top:9px; border-top:1px solid var(--line); font-size:13px; color:var(--ink-2); }
 .facts span b{ font-family:var(--mono); color:var(--ink); font-weight:600; margin-left:4px; }
 .note{ margin-top:6px; font-size:11.5px; color:var(--ink-2); }
@@ -114,6 +123,20 @@ header{ position:fixed; top:calc(env(safe-area-inset-top,0px) + 16px); left:20px
       <div class="n" id="nLoad"></div>
     </div>
   </div>
+  <div class="bill">
+    <div class="main">
+      <div class="k" id="billLabel">ค่าไฟรอบบิลนี้</div>
+      <div class="amt"><span id="billAmt">–</span><small>บาท</small></div>
+    </div>
+    <div class="side">
+      ใช้ไป <b id="billKwh">–</b> หน่วย × <b id="billRate">–</b> บาท<br>
+      <span id="billSince"></span>
+    </div>
+    <div class="side right">
+      คาดการณ์ทั้งรอบ <b id="billProj">–</b> บาท<br>
+      ตอนนี้ <b id="billNow">–</b> บาท/ชม.
+    </div>
+  </div>
   <div class="facts">
     <span>แรงดัน L-N<b id="fV">–</b></span>
     <span>กระแสเฉลี่ย<b id="fI">–</b></span>
@@ -144,7 +167,10 @@ const CONFIG = {
   solarField: 'p_total',                // ฟิลด์กำลังผลิต (W) ใน solarDoc
   solarKwp: 10,
   pollSec: 30,
-  staleMin: 10
+  staleMin: 10,
+  tariff: 4.67,                         // บาทต่อหน่วย (kWh)
+  billDay: 15,                          // วันตัดรอบบิลของทุกเดือน
+  readingsColl: 'readings'              // ประวัติที่ Node-RED เขียนไว้ใต้ meterDoc
 };
 /* ========================================================= */
 
@@ -620,7 +646,62 @@ async function refresh(){
     state = { mode:'demo', gridKw: loadKw - solarKw, solarKw, solarReal:false, loadKw, meter:{ v_ln_avg:231.8, i_avg:6.4, pf_total:0.93, kwh_import:36.59, temp:31.3 }, err };
   }
   render();
+  updateBill(state.meter && state.meter.kwh_import, state.mode !== 'demo');
 }
+/* ---------- ค่าไฟรอบบิล ---------- */
+const TH_MON = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+const BKK = 7 * 3600000;
+function billCycle(now = new Date()){
+  const b = new Date(now.getTime() + BKK);
+  let y = b.getUTCFullYear(), m = b.getUTCMonth();
+  if (b.getUTCDate() < CONFIG.billDay){ m -= 1; if (m < 0){ m = 11; y -= 1; } }
+  const start = new Date(Date.UTC(y, m, CONFIG.billDay) - BKK);
+  const end   = new Date(Date.UTC(y, m + 1, CONFIG.billDay) - BKK);
+  return { start, end };
+}
+const thDate = d => { const b = new Date(d.getTime() + BKK); return `${b.getUTCDate()} ${TH_MON[b.getUTCMonth()]}`; };
+let billBase = null;
+async function loadBillBase(cycle){
+  const url = `https://firestore.googleapis.com/v1/projects/${CONFIG.project}/databases/(default)/documents/${CONFIG.meterDoc}:runQuery?key=${CONFIG.apiKey}`;
+  const body = { structuredQuery:{
+    from:[{ collectionId:CONFIG.readingsColl }],
+    where:{ fieldFilter:{ field:{ fieldPath:'ts' }, op:'GREATER_THAN_OR_EQUAL', value:{ timestampValue:cycle.start.toISOString() } } },
+    orderBy:[{ field:{ fieldPath:'ts' }, direction:'ASCENDING' }],
+    limit:80 } };
+  const r = await fetch(url, { method:'POST', headers:{ 'Content-Type':'application/json' }, body:JSON.stringify(body) });
+  if (!r.ok) throw new Error('HTTP ' + r.status);
+  const rows = (await r.json()).filter(x => x.document).map(x => parseFields(x.document.fields || {}));
+  const first = rows.find(f => typeof f.kwh_import === 'number');   // รอบอ่าน kWh มีทุก 15 นาที
+  billBase = first ? { kwh:first.kwh_import, ts:new Date(first.ts), cycleStart:cycle.start.getTime(), loadedAt:Date.now() }
+                   : { kwh:null, cycleStart:cycle.start.getTime(), loadedAt:Date.now() };
+}
+async function updateBill(kwhNow, live){
+  const cycle = billCycle();
+  if (live && (!billBase || billBase.cycleStart !== cycle.start.getTime() || (billBase.kwh == null && Date.now() - billBase.loadedAt > 15*60000))){
+    try { await loadBillBase(cycle); } catch(e){ billBase = null; }
+  }
+  const endShow = new Date(cycle.end.getTime() - 86400000);
+  $('billLabel').textContent = `ค่าไฟรอบบิล ${thDate(cycle.start)} – ${thDate(endShow)}`;
+  $('billRate').textContent = CONFIG.tariff.toFixed(2);
+  let base = billBase, since = cycle.start;
+  if (!live) base = { kwh: Math.max(0, kwhNow - 120), ts: cycle.start };   // โหมดตัวอย่าง
+  if (!base || base.kwh == null || typeof kwhNow !== 'number'){
+    ['billAmt','billKwh','billProj'].forEach(id => $(id).textContent = '–');
+    $('billSince').textContent = 'ยังไม่มีประวัติ kWh ในรอบนี้';
+    return;
+  }
+  if (base.ts && base.ts - cycle.start > 3600000) since = base.ts;
+  const used = Math.max(0, kwhNow - base.kwh);
+  const cost = used * CONFIG.tariff;
+  const money = v => v.toLocaleString('th-TH', { minimumFractionDigits:2, maximumFractionDigits:2 });
+  $('billAmt').textContent = money(cost);
+  $('billKwh').textContent = used.toLocaleString('th-TH', { maximumFractionDigits:1 });
+  const elapsedDays = (Date.now() - since.getTime()) / 86400000;
+  const cycleDays = (cycle.end - since) / 86400000;
+  $('billProj').textContent = elapsedDays > 0.5 ? money(cost / elapsedDays * cycleDays) : '–';
+  $('billSince').textContent = since > cycle.start ? `นับจากข้อมูลแรกที่มี ${thDate(since)}` : `ผ่านไป ${Math.floor(elapsedDays)} วัน`;
+}
+
 function ago(min){
   if (!isFinite(min)) return 'ไม่ทราบเวลา';
   if (min < 1) return 'เมื่อสักครู่';
@@ -643,6 +724,7 @@ function render(){
   $('tGrid').style.setProperty('--c', exporting ? 'var(--export)' : 'var(--grid)');
   $('vLoad').textContent = fmt(s.loadKw);
   $('nLoad').textContent = s.loadKw > 0.05 ? `โซลาร์จ่ายได้ ${Math.min(100, Math.round(s.solarKw / s.loadKw * 100))}% ของโหลด` : '';
+  $('billNow').textContent = (Math.max(0, s.gridKw) * CONFIG.tariff).toFixed(2);
   $('fV').textContent   = m.v_ln_avg != null ? fmt(m.v_ln_avg,1) + ' V' : '–';
   $('fI').textContent   = m.i_avg != null ? fmt(m.i_avg,2) + ' A' : '–';
   $('fPF').textContent  = m.pf_total != null ? fmt(m.pf_total,3) : '–';
