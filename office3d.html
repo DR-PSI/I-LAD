@@ -8,57 +8,50 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
 <style>
-/* ============ ตั้งค่าสี ============ */
 :root{
-  --ink:#1C2B3A; --ink-2:#506173; --paper:#EEF2F4; --card:rgba(255,255,255,.92);
+  --ink:#1C2B3A; --ink-2:#506173; --card:rgba(255,255,255,.9); --line:rgba(28,43,58,.12);
   --brand:#1F5FB0; --solar:#F5A300; --grid:#1E7BFF; --export:#E5252A; --ok:#0FB866; --load:#A63DF0; --warn:#E5480E;
-  --line:rgba(28,43,58,.12);
   --sans:'IBM Plex Sans Thai',system-ui,-apple-system,'Segoe UI',Tahoma,sans-serif;
   --mono:'IBM Plex Mono',ui-monospace,Consolas,monospace;
 }
-@media (prefers-color-scheme: dark){
-  :root:not([data-theme="light"]){ --ink:#E6EDF3; --ink-2:#9AAABB; --paper:#0F1722; --card:rgba(20,30,42,.9); --line:rgba(230,237,243,.14); --brand:#6FA3DA; }
-}
-:root[data-theme="dark"]{ --ink:#E6EDF3; --ink-2:#9AAABB; --paper:#0F1722; --card:rgba(20,30,42,.9); --line:rgba(230,237,243,.14); --brand:#6FA3DA; }
+:root[data-sky="night"]{ --ink:#E8EEF6; --ink-2:#A3B2C4; --card:rgba(16,24,38,.82); --line:rgba(232,238,246,.16); --brand:#7DB3FF; }
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){ --ink:#E8EEF6; --ink-2:#A3B2C4; --card:rgba(16,24,38,.82); --line:rgba(232,238,246,.16); --brand:#7DB3FF; } }
+:root[data-theme="dark"]{ --ink:#E8EEF6; --ink-2:#A3B2C4; --card:rgba(16,24,38,.82); --line:rgba(232,238,246,.16); --brand:#7DB3FF; }
 :root{ box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px); }
 *,*::before,*::after{ box-sizing:inherit; }
 html,body{ height:100%; margin:0; }
-body{ background:linear-gradient(180deg,#5FAEF5 0%,#A9D6FF 38%,#E4F3FF 62%,#EEF6EC 100%); color:var(--ink); font-family:var(--sans); overflow:hidden; }
-@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) body{ background:linear-gradient(180deg,#16212E 0%,var(--paper) 60%); } }
-
+body{ background:#8EC3F2; color:var(--ink); font-family:var(--sans); overflow:hidden; }
 #stage{ position:fixed; inset:0; }
 #stage canvas{ display:block; outline:none; }
 
-/* ป้ายบนอุปกรณ์ */
 #tags{ position:fixed; inset:0; pointer-events:none; }
-.tag{ position:absolute; transform:translate(-50%,-100%); pointer-events:auto; cursor:pointer;
-  background:var(--card); border:1px solid var(--line); border-left:4px solid var(--c); border-radius:6px;
-  padding:5px 10px 6px; white-space:nowrap; font-size:12px; line-height:1.25; color:var(--ink);
-  box-shadow:0 4px 14px rgba(20,40,60,.12); backdrop-filter:blur(6px); }
-.tag b{ display:block; font-weight:600; font-size:12px; }
+.tag{ position:absolute; left:0; top:0; pointer-events:auto; cursor:pointer; background:var(--card); border:1px solid var(--line);
+  border-left:4px solid var(--c); border-radius:6px; padding:5px 10px 6px; white-space:nowrap; font-size:12px; line-height:1.25;
+  color:var(--ink); box-shadow:0 4px 14px rgba(10,25,45,.18); backdrop-filter:blur(6px); transition:opacity .4s; }
+.tag b{ display:block; font-weight:600; }
 .tag span{ font-family:var(--mono); font-size:13px; font-weight:600; color:var(--c); }
 .tag:focus-visible{ outline:2px solid var(--brand); outline-offset:2px; }
 .tag.hidden{ display:none; }
+body.intro .tag, body.intro #balance{ opacity:0; }
 
-/* ส่วนหัว */
 header{ position:fixed; top:calc(env(safe-area-inset-top,0px) + 16px); left:20px; right:20px; display:flex; justify-content:space-between; align-items:flex-start; gap:12px; pointer-events:none; }
-.brand{ pointer-events:auto; }
+.brand{ pointer-events:auto; text-shadow:0 1px 8px rgba(255,255,255,.35); }
+:root[data-sky="night"] .brand{ text-shadow:none; }
 .brand h1{ margin:0; font-size:26px; letter-spacing:.06em; font-weight:600; color:var(--brand); }
-.brand p{ margin:2px 0 0; font-size:14px; color:var(--ink-2); }
+.brand p{ margin:2px 0 0; font-size:14px; color:var(--ink); opacity:.8; }
 .status{ margin-top:8px; display:inline-flex; align-items:center; gap:8px; font-size:13px; padding:4px 10px; border-radius:999px; background:var(--card); border:1px solid var(--line); }
 .status i{ width:8px; height:8px; border-radius:50%; background:#999; }
 .status.live i{ background:var(--ok); box-shadow:0 0 0 3px rgba(15,184,102,.25); }
 .status.stale i{ background:var(--warn); }
 .status.demo i{ background:var(--solar); }
-.tools{ display:flex; gap:8px; pointer-events:auto; }
-.tools button{ font:500 13px var(--sans); color:var(--ink); background:var(--card); border:1px solid var(--line); border-radius:8px; padding:7px 12px; cursor:pointer; white-space:nowrap; }
+.tools{ display:flex; gap:8px; pointer-events:auto; flex-wrap:wrap; justify-content:flex-end; }
+.tools button{ font:500 13px var(--sans); color:var(--ink); background:var(--card); border:1px solid var(--line); border-radius:8px; padding:7px 12px; cursor:pointer; white-space:nowrap; backdrop-filter:blur(6px); }
 .tools button[aria-pressed="true"]{ border-color:var(--brand); color:var(--brand); }
 .tools button:focus-visible{ outline:2px solid var(--brand); outline-offset:2px; }
 
-/* สมการพลังงาน */
 #balance{ position:fixed; left:50%; transform:translateX(-50%); bottom:calc(env(safe-area-inset-bottom,0px) + 18px);
   width:min(860px, calc(100% - 24px)); background:var(--card); border:1px solid var(--line); border-radius:14px;
-  padding:14px 18px 12px; backdrop-filter:blur(8px); box-shadow:0 10px 30px rgba(20,40,60,.14); }
+  padding:14px 18px 12px; backdrop-filter:blur(10px); box-shadow:0 10px 30px rgba(10,25,45,.2); transition:opacity .8s; }
 .eq{ display:grid; grid-template-columns:1fr auto 1fr auto 1fr; align-items:center; gap:6px 14px; }
 .term .k{ font-size:13px; color:var(--ink-2); display:flex; align-items:center; gap:6px; }
 .term .k::before{ content:""; width:10px; height:10px; border-radius:2px; background:var(--c); }
@@ -81,9 +74,10 @@ header{ position:fixed; top:calc(env(safe-area-inset-top,0px) + 16px); left:20px
   .facts{ gap:4px 14px; font-size:12px; }
   .note{ display:none; }
 }
+@media (prefers-reduced-motion: reduce){ .tag, #balance{ transition:none; } }
 </style>
 </head>
-<body>
+<body class="intro">
 <div id="stage" aria-label="แบบจำลอง 3 มิติของอาคารสำนักงานและระบบโซลาร์"></div>
 <div id="tags"></div>
 
@@ -94,6 +88,7 @@ header{ position:fixed; top:calc(env(safe-area-inset-top,0px) + 16px); left:20px
     <div class="status demo" id="status"><i></i><span id="statusText">กำลังเชื่อมต่อ…</span></div>
   </div>
   <div class="tools">
+    <button id="btnSky" type="button">บรรยากาศตามเวลาจริง</button>
     <button id="btnHome" type="button">มุมภาพรวม</button>
     <button id="btnSpin" type="button" aria-pressed="true">หมุนอัตโนมัติ</button>
   </div>
@@ -126,11 +121,19 @@ header{ position:fixed; top:calc(env(safe-area-inset-top,0px) + 16px); left:20px
     <span>พลังงานสะสม<b id="fKwh">–</b></span>
     <span>อุณหภูมิตู้<b id="fT">–</b></span>
   </div>
-  <div class="note" id="note">คำนวณโดยถือว่า IE-01 ติดที่จุดรับไฟการไฟฟ้า ค่าบวกคือซื้อเข้า ค่าลบคือขายคืน</div>
+  <div class="note">คำนวณโดยถือว่า IE-01 ติดที่จุดรับไฟการไฟฟ้า ค่าบวกคือซื้อเข้า ค่าลบคือขายคืน</div>
 </section>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/environments/RoomEnvironment.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/GammaCorrectionShader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
 <script>
 /* ======================= แก้ตรงนี้ ======================= */
 const CONFIG = {
@@ -146,114 +149,203 @@ const CONFIG = {
 /* ========================================================= */
 
 const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const narrow = innerWidth < 640;
 const stage = document.getElementById('stage');
+const lin = hex => new THREE.Color(hex).convertSRGBToLinear();
 
-/* ---------- ฉาก ---------- */
-const renderer = new THREE.WebGLRenderer({ antialias:true, alpha:true });
-renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+/* ================= เรนเดอร์ ================= */
+const renderer = new THREE.WebGLRenderer({ antialias:true, powerPreference:'high-performance' });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 1.75));
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.outputEncoding = THREE.sRGBEncoding;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 0.9;
+renderer.toneMappingExposure = 1.0;
 stage.appendChild(renderer.domElement);
 
 const scene = new THREE.Scene();
-scene.fog = new THREE.Fog(0xCFE7FA, 130, 230);
-
-const camera = new THREE.PerspectiveCamera(40, 1, 0.5, 400);
-const narrow = innerWidth < 640;
+const camera = new THREE.PerspectiveCamera(40, 1, 0.5, 900);
 const HOME = narrow
-  ? { pos:new THREE.Vector3(30, 44, 70), target:new THREE.Vector3(-6, 0, 4) }
-  : { pos:new THREE.Vector3(34, 26, 42), target:new THREE.Vector3(-3, 3, 2) };
-camera.position.copy(HOME.pos);
+  ? { pos:new THREE.Vector3(30, 44, 70), target:new THREE.Vector3(-5, 0, 4) }
+  : { pos:new THREE.Vector3(34, 24, 44), target:new THREE.Vector3(-3, 3, 3) };
+const INTRO = new THREE.Vector3(95, 75, 150);
+camera.position.copy(reduceMotion ? HOME.pos : INTRO);
 
 const controls = new THREE.OrbitControls(camera, renderer.domElement);
-controls.target.copy(HOME.target);
+controls.target.copy(reduceMotion ? HOME.target : new THREE.Vector3(0, 0, 0));
 controls.enableDamping = true;
 controls.maxPolarAngle = Math.PI * 0.47;
-controls.minDistance = 10;
-controls.maxDistance = 110;
-controls.autoRotate = !reduceMotion;
+controls.minDistance = 8;
+controls.maxDistance = 130;
 controls.autoRotateSpeed = 0.35;
 
-scene.add(new THREE.HemisphereLight(0xBFE0FF, 0x6E9E4A, 0.8));
-const sun = new THREE.DirectionalLight(0xFFE2B0, 1.3);
-sun.position.set(-25, 40, 30);
+// แสงสะท้อนบนกระจกและแผงโซลาร์
+const pmrem = new THREE.PMREMGenerator(renderer);
+scene.environment = pmrem.fromScene(new THREE.RoomEnvironment(), 0.04).texture;
+
+// โพสต์โปรเซส: แสงเรืองของเส้นพลังงาน ไฟถนน ดวงอาทิตย์
+const rt = renderer.capabilities.isWebGL2
+  ? new THREE.WebGLMultisampleRenderTarget(1, 1, { format:THREE.RGBAFormat, encoding:THREE.LinearEncoding })
+  : undefined;
+const composer = new THREE.EffectComposer(renderer, rt);
+composer.addPass(new THREE.RenderPass(scene, camera));
+const bloom = new THREE.UnrealBloomPass(new THREE.Vector2(256, 256), 0.75, 0.55, 0.92);
+composer.addPass(bloom);
+composer.addPass(new THREE.ShaderPass(THREE.GammaCorrectionShader));
+
+/* ================= ท้องฟ้า ================= */
+const skyMat = new THREE.ShaderMaterial({
+  side:THREE.BackSide, depthWrite:false, fog:false,
+  uniforms:{ top:{value:new THREE.Color()}, horizon:{value:new THREE.Color()}, sunDir:{value:new THREE.Vector3(0,1,0)},
+             sunColor:{value:new THREE.Color()}, sunVis:{value:1} },
+  vertexShader:`varying vec3 vD; void main(){ vD = normalize(position); gl_Position = projectionMatrix*modelViewMatrix*vec4(position,1.0); }`,
+  fragmentShader:`uniform vec3 top,horizon,sunColor; uniform vec3 sunDir; uniform float sunVis; varying vec3 vD;
+    void main(){ vec3 d=normalize(vD); float h=max(d.y,0.0);
+      vec3 c=mix(horizon,top,pow(h,0.5));
+      float s=max(dot(d,normalize(sunDir)),0.0);
+      c+=sunColor*(pow(s,1400.0)*30.0+pow(s,40.0)*0.6+pow(s,6.0)*0.18)*sunVis;
+      gl_FragColor=vec4(c,1.0); }`
+});
+const sky = new THREE.Mesh(new THREE.SphereGeometry(500, 32, 16), skyMat);
+scene.add(sky);
+
+const starGeo = new THREE.BufferGeometry();
+{ const p=[]; for(let i=0;i<900;i++){ const u=Math.random(), v=Math.random()*0.9+0.08, th=u*Math.PI*2, ph=Math.acos(v);
+    p.push(480*Math.sin(ph)*Math.cos(th), 480*Math.cos(ph), 480*Math.sin(ph)*Math.sin(th)); }
+  starGeo.setAttribute('position', new THREE.Float32BufferAttribute(p,3)); }
+const stars = new THREE.Points(starGeo, new THREE.PointsMaterial({ color:0xffffff, size:1.6, sizeAttenuation:false, transparent:true, opacity:0, fog:false, toneMapped:false }));
+scene.add(stars);
+
+// เมฆ
+const cloudMat = new THREE.MeshStandardMaterial({ color:0xffffff, roughness:1, transparent:true, opacity:0.92, envMapIntensity:0.3 });
+const clouds = new THREE.Group(); scene.add(clouds);
+for (let i=0;i<9;i++){
+  const c = new THREE.Group(), n = 3 + (i%3);
+  for (let k=0;k<n;k++){ const s = new THREE.Mesh(new THREE.IcosahedronGeometry(3 + Math.random()*2.5, 1), cloudMat);
+    s.position.set(k*3.4 - n*1.6, Math.random()*1.5, Math.random()*2.5); s.scale.y = 0.6; c.add(s); }
+  const a = i/9*Math.PI*2; c.position.set(Math.cos(a)*(110+i*9), 46+(i%4)*7, Math.sin(a)*(110+i*9)); c.rotation.y = -a;
+  clouds.add(c);
+}
+
+scene.fog = new THREE.Fog(0xffffff, 120, 330);
+
+/* ================= แสง ================= */
+const hemi = new THREE.HemisphereLight(0xffffff, 0xffffff, 1);
+scene.add(hemi);
+const sun = new THREE.DirectionalLight(0xffffff, 2.5);
 sun.castShadow = true;
 sun.shadow.mapSize.set(2048, 2048);
-Object.assign(sun.shadow.camera, { left:-40, right:40, top:40, bottom:-40, near:1, far:120 });
-sun.shadow.bias = -0.0005;
-scene.add(sun);
+Object.assign(sun.shadow.camera, { left:-42, right:42, top:42, bottom:-42, near:1, far:200 });
+sun.shadow.bias = -0.0004; sun.shadow.normalBias = 0.03;
+scene.add(sun, sun.target);
 
-const M = (color, o={}) => new THREE.MeshStandardMaterial(Object.assign({ color, roughness:0.8, metalness:0.05 }, o));
+/* ================= วัสดุ ================= */
+const M = (hex, o={}) => { const m = new THREE.MeshStandardMaterial(Object.assign({ roughness:0.8, metalness:0.02, envMapIntensity:0.3 }, o)); m.color.copy(lin(hex)); if (o.emissive!=null) m.emissive.copy(lin(o.emissive)); return m; };
 const mat = {
-  ground:M(0x2F8F22, {roughness:1}), road:M(0x3B434D, {roughness:0.9}), concrete:M(0xF1ECE2), trim:M(0xC9D2DC), metal:M(0xD5DEE8, {metalness:0.25, roughness:0.45}),
-  roofMetal:M(0x34404E, {metalness:0.5, roughness:0.42}), rib:M(0x46556A, {metalness:0.55, roughness:0.35}), roofSlab:M(0x39434E, {roughness:0.85}), glass:M(0x2A8FE0, {transparent:true, opacity:0.72, roughness:0.05, metalness:0.55, emissive:0x0B3E73, emissiveIntensity:0.25}),
-  frame:M(0x26313D), door:M(0xBFC9D3, {metalness:0.35}), panel:M(0x0D2660, {roughness:0.28, metalness:0.35, emissive:0x041438, emissiveIntensity:0.25}), cell:M(0x5D7BB8, {roughness:0.4}),
-  panelFrame:M(0xC7CFD7, {metalness:0.7, roughness:0.3}), white:M(0xFFFFFF), cabinet:M(0x8E9AA6, {metalness:0.4}),
-  pole:M(0xA8A59C), leaf:M(0x3FAE49, {roughness:0.7}), leaf2:M(0x7CC63E, {roughness:0.7}), trunk:M(0x7A4E2D), screen:M(0x1C3A24, {emissive:0x3CFF7A, emissiveIntensity:0.8}),
-  stripe:M(0xFFFFFF, {roughness:0.6}), accent:M(0xF07A1A, {roughness:0.5})
+  ground:M(0x6CBF46,{roughness:1, envMapIntensity:0.2}), road:M(0x3F4752,{roughness:0.92}), side:M(0xD8D4CC), plaza:M(0xC9C4BA,{roughness:0.95}),
+  concrete:M(0xF4EFE5), trim:M(0xCDD5DE), wall:M(0xDDE4EB,{metalness:0.2, roughness:0.5}),
+  roof:M(0x3B4859,{metalness:0.45, roughness:0.42, envMapIntensity:0.4}), rib:M(0x5A6B82,{metalness:0.6, roughness:0.32}), roofSlab:M(0x55606C,{roughness:0.85}),
+  glass:M(0x5AA9E6,{transparent:true, opacity:0.5, roughness:0.05, metalness:0.6, envMapIntensity:0.8}),
+  windowGlow:M(0x2A3A4A,{emissive:0xFFC27A, emissiveIntensity:0}),
+  frame:M(0x2A333E,{metalness:0.4, roughness:0.4}), door:M(0xC2CBD4,{metalness:0.4, roughness:0.4}),
+  panel:M(0x102B6E,{roughness:0.45, metalness:0.25, envMapIntensity:0.45, emissive:0x2C6BFF, emissiveIntensity:0}),
+  cell:M(0x2A4C9C,{roughness:0.6}), panelFrame:M(0xC9D0D8,{metalness:0.8, roughness:0.3}),
+  white:M(0xFFFFFF), cabinet:M(0x9AA6B2,{metalness:0.45, roughness:0.45}), screen:M(0x12301C,{emissive:0x46FF86, emissiveIntensity:1.2}),
+  pole:M(0xB8B5AC), leaf:M(0x3FA845,{roughness:0.75}), leaf2:M(0x8CCB3D,{roughness:0.75}), hedge:M(0x2F8F3A,{roughness:0.9}),
+  trunk:M(0x8A5A33), accent:M(0xF07A1A,{emissive:0xF07A1A, emissiveIntensity:0.15}), stripe:M(0xFFFFFF,{roughness:0.6}),
+  bulb:M(0xFFF1C9,{emissive:0xFFD98A, emissiveIntensity:0}), tyre:M(0x22262B,{roughness:0.7}),
+  carRed:M(0xD7263D,{metalness:0.6, roughness:0.28, envMapIntensity:0.6}), carWhite:M(0xF2F4F6,{metalness:0.5, roughness:0.3, envMapIntensity:0.6}),
+  carBlue:M(0x2E6FD8,{metalness:0.6, roughness:0.28, envMapIntensity:0.6}), carGlass:M(0x1C2733,{metalness:0.8, roughness:0.1, envMapIntensity:0.8})
 };
 
-function box(w,h,d,m,x,y,z,parent=scene){
+function box(w,h,d,m,x,y,z,parent=scene,shadow=true){
   const mesh = new THREE.Mesh(new THREE.BoxGeometry(w,h,d), m);
-  mesh.position.set(x,y,z); mesh.castShadow = true; mesh.receiveShadow = true;
+  mesh.position.set(x,y,z); mesh.castShadow = shadow; mesh.receiveShadow = true;
   parent.add(mesh); return mesh;
 }
+const cyl = (rt,rb,h,m,x,y,z,seg=12,parent=scene) => { const c = new THREE.Mesh(new THREE.CylinderGeometry(rt,rb,h,seg), m); c.position.set(x,y,z); c.castShadow = c.receiveShadow = true; parent.add(c); return c; };
 
-/* ---------- พื้นและถนน ---------- */
-const ground = new THREE.Mesh(new THREE.PlaneGeometry(160,160), mat.ground);
+/* ================= พื้น ถนน ทางเท้า ================= */
+const ground = new THREE.Mesh(new THREE.CircleGeometry(340, 64), mat.ground);
 ground.rotation.x = -Math.PI/2; ground.receiveShadow = true; scene.add(ground);
-box(160, 0.05, 9, mat.road, 0, 0.03, 19);
-box(14, 0.06, 8, mat.road, -10, 0.04, 11.5);   // ลานหน้าโกดัง
-box(10, 0.06, 6, mat.trim, 7, 0.04, 9.5);      // ลานหน้าออฟฟิศ
-for (let i=-7;i<=7;i++) box(3, 0.02, 0.25, mat.stripe, i*10, 0.07, 19);   // เส้นถนน
+box(400, 0.05, 9, mat.road, 0, 0.03, 19, scene, false);
+for (let i=-20;i<=20;i++) box(3, 0.02, 0.22, mat.stripe, i*9, 0.07, 19, scene, false);
+box(400, 0.25, 2, mat.side, 0, 0.12, 13.6, scene, false);       // ทางเท้า
+box(14, 0.06, 6.6, mat.road, -10, 0.04, 10.5, scene, false);    // ลานหน้าโกดัง
+box(17, 0.06, 6.4, mat.plaza, 7, 0.05, 9.6, scene, false);      // ลานจอดรถหน้าออฟฟิศ
+for (let i=0;i<7;i++){ const x = -0.6 + i*2.6; if (Math.abs(x-9) > 1.2) box(0.12, 0.02, 4.4, mat.stripe, x, 0.09, 10.4, scene, false); }
 
-/* ---------- อาคารสำนักงาน 2 ชั้น ---------- */
+/* ================= อาคารสำนักงาน ================= */
 const OX = 7;
 box(18, 8, 12, mat.concrete, OX, 4, 0);
-box(18.4, 0.6, 12.4, mat.trim, OX, 8.3, 0);                 // parapet
-box(18.5, 0.18, 0.1, mat.accent, OX, 8.55, 6.22);           // แถบสีแบรนด์
-box(17.4, 0.12, 11.4, mat.roofSlab, OX, 8.62, 0);            // พื้นหลังคาสำนักงาน
-box(2.4, 1.0, 1.6, mat.cabinet, OX+5, 9.2, -2.5);            // แอร์บนหลังคา
-box(2.4, 1.0, 1.6, mat.cabinet, OX+2, 9.2, -2.5);
+box(18.4, 0.6, 12.4, mat.trim, OX, 8.3, 0);
+box(18.5, 0.18, 0.1, mat.accent, OX, 8.55, 6.22);
+box(17.4, 0.12, 11.4, mat.roofSlab, OX, 8.62, 0);
 for (let f=0; f<2; f++){
   const y = 1.9 + f*4;
-  box(15.5, 3.0, 0.15, mat.glass, OX+0.8, y, 6.05);         // กระจกหน้า
+  box(15.4, 2.8, 0.1, mat.windowGlow, OX+0.8, y, 5.92, scene, false);   // ไฟในห้อง (กลางคืน)
+  box(15.5, 3.0, 0.12, mat.glass, OX+0.8, y, 6.06, scene, false);
   for (let i=0; i<=6; i++) box(0.12, 3.0, 0.25, mat.frame, OX-6.95+i*2.58, y, 6.1);
-  box(18.2, 0.35, 0.5, mat.trim, OX, y+1.7, 6.15);           // แนวพื้น
+  box(18.2, 0.35, 0.5, mat.trim, OX, y+1.7, 6.15);
 }
-box(16, 0.25, 2.2, mat.trim, OX+0.5, 4.05, 7.1);             // ระเบียงชั้น 2
-box(16, 1.0, 0.06, mat.glass, OX+0.5, 4.7, 8.15);
-box(3, 2.6, 0.2, mat.frame, OX+2, 1.3, 6.1);                 // ประตูทางเข้า
+// หน้าต่างผนังข้างและหลัง
+for (let f=0; f<2; f++) for (let k=0;k<3;k++){
+  const y = 1.9 + f*4;
+  box(0.1, 1.8, 2.4, mat.windowGlow, -2.03, y, -3.6+k*3.6, scene, false);
+  box(0.12, 1.9, 2.5, mat.glass, -2.06, y, -3.6+k*3.6, scene, false);
+  box(0.1, 1.8, 2.4, mat.windowGlow, 16.03, y, -3.6+k*3.6, scene, false);
+  box(0.12, 1.9, 2.5, mat.glass, 16.06, y, -3.6+k*3.6, scene, false);
+}
+box(16, 0.25, 2.2, mat.trim, OX+0.5, 4.05, 7.1);
+box(16, 1.0, 0.06, mat.glass, OX+0.5, 4.7, 8.15, scene, false);
+box(3, 2.6, 0.2, mat.frame, OX+2, 1.3, 6.12);
+box(3.6, 0.15, 1.6, mat.trim, OX+2, 2.8, 6.9);                     // กันสาดประตู
+[[-1.2,4.5],[12.2,4.6]].forEach(([x,w]) => box(w, 0.7, 0.8, mat.hedge, x+w/2, 0.35, 6.75));  // แนวพุ่มไม้
 
-/* ---------- โกดัง + หลังคาจั่ว ---------- */
-const WX = -10, WZ = 1, WD = 14, WH = 6.5, RISE = 2.2;
-box(12, WH, WD, mat.metal, WX, WH/2, WZ);
-box(5.2, 4.4, 0.15, mat.door, WX-1.5, 2.2, WZ+WD/2+0.05);    // ประตูม้วน
-for (let i=0;i<10;i++) box(5.2, 0.04, 0.2, mat.trim, WX-1.5, 0.3+i*0.44, WZ+WD/2+0.13);
+// ป้ายโลโก้ Tinamics บนหลังคา
+const LOGO_SIGN = 'data:image/jpeg;base64,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zIj9T1X/AIEBWZoOt63oWsx3eg3k9vdswUCH5vNyeFK9Gz6EVpgeMcwy+qsPmdNy+Vpf5P8AXuRjeEcBj6f1jLaij87x/wA1+nY+0KKy/D02szeGrObxBb28GovGGnigJKq3pz3x1HrmtPIr9Vpz54qdrX77n5hOPJJxve3YWiiirJCiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKCcCivG/jB8SpNMSTwroNwUvHXF5cIeYVI+4p7OR1PYe5487NMzo5bh5Yiu9FsurfZHfluXVsxrxw9Fav7ku7IviV8YX0+7k0LwlOhuY223F+AHWMg8ogPBPqeg6Dnp3Hw+8d2fjbw6JgEh1CABbu2B+6395fVT29OR2r5MrX8M+I9S8K+IoNY0uTEsfDxt92VD1RvY/ocGvyzA8b4pY91sS/3UtHFdF3Xmuvf7rfpmN4MwzwKo4f8AiR1Uu77PyfTt99/qDXvhx4W8SeJbfW9VsjJPEux0VtqTgfd8wD72Oe/sciuiI0/SdM/5drKzt0z/AAxRxKO/YKBWd4W8T6d4t8OQ6vpknyP8skTH5oXHVG9x+owa8L/av8EeMdd8Hw+ItE1W+udJ05C2oaIh/d7QSftAUffK9GBzgcjGDn9Pvh6NKWMwsFJy1ura+dz82tXq1Y4PEzaUdLO+nlY0vHX7V/gPw00ll4Zil8UXy5G+2byrVT7ykfN/wAEe9fPfij9p74seIndLPVrfQLYniLS4Qr495X3MfwxXnXhTwT4r8cat/Z3hTQ7vU5hje0S4jiB7vIcKg+pr6K8H/sbXc0Udz458ULbZwTZaSgdh7GVxj8lP1rwPrOY49/utI+Wi+89z6vgMD/Es356v7j5p1XxF4h12Zpda13VNSdjkm7upJf0YkVlbIs8Rx/8AfIr9DdF/Zq+DujRKreE01KQH/W6lO85P4Ehf0r5//a18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9zTGQnoSPen0UAM2kqQxzn0pSpyCMdefpTqKADHuaayEnKsQadRQA1VKjG4n60pGccnilooAaVO4H0pcH1paKADHuaay5IPpTqKAGhTnJNOoooAMe5ox7miigBpUHqAcetNMZK9iePpUlFAEZRichyPYdKfilooATHvSbW7kU6igBMAjBGRRt/H2NLRQAwRgDk5PqeaXb0wT+dOooAYUzx0FLtIOQf1p1FACY9TTfLGSQSMjHFPooAQDA60tFFABSFQeCOPSlooATGBik2+5/OnUUAMCEfxH8Tmgq/GD3p9FAEfl46ADH3falEYA6mn0UAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABVTU4pJ9Hu4Ihl5IXRRnGSVIFW6KmUeZNDTs7o+LNV8Pa54fkEGtaVdWLAYzNGQp+jdD+BrO7V9wTQQ3EDQzxJLGwwyOoYH6g1yOqfCrwJqzM82gQQSNz5loTAfyUgfpX5bjfDuom3hKqa7S0/FX/ACR+mYPj+m1bFUmn3i7/AIO35s+Ta93/AGd/+PLxD/10g/k9aN7+z94blJNhrGp2vtJslH8gf1rp/h98PU8BR6ikerNfi8aNvmhEezaD/tHP3vaq4c4WzDL8yhXrRXIr6prqmvX8BcQcTYDH5dOjRk+d20afRp+n4nNfH/8A5J9Yf9hBf/Rb18619cePfBK+OdAt9MbUmsRFcCfzBF5mcKVxjI9etcXZ/s+eH42zfa7qVwPSJUi/oa14o4Zx+Y5g62HiuWyV20v+CZcNcR4HL8AqNeT5rt2Sb/4H4nz3V3TNH1XWboW+k6dc3sv923jL4+pHA/GvqDTPhH4C0shk0RLuQfx3jtN+hOP0rsba0tbK3FvaW0MES9I4kCKPwFc2D8O60mniqqS7R1/F2/JnRi+P6SVsNSbfeWn4K/5oyPBljd6Z8P8AR9OvovKube0jjljJB2sF5GRxWlFplhDqc+oxWkKXc4CyzhRvcAYAJ64HpVuiv1ClQhTpwp7qKVr+SsfmtStKpOU3o5Xv83cMUUUVsZBRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAf/Z';
+const signTex = new THREE.TextureLoader().load(LOGO_SIGN);
+signTex.encoding = THREE.sRGBEncoding; signTex.anisotropy = 8;
+const signMat = new THREE.MeshStandardMaterial({ map:signTex, emissiveMap:signTex, emissive:0xffffff, emissiveIntensity:0.12, roughness:0.6, envMapIntensity:0.2 });
+const sign = new THREE.Mesh(new THREE.PlaneGeometry(7.5, 1.5), signMat);
+sign.position.set(OX+3.5, 9.75, 5.72); scene.add(sign);
+box(7.8, 1.8, 0.14, mat.frame, OX+3.5, 9.75, 5.62);
+cyl(0.06,0.06,1.0,mat.frame, OX+0.8, 8.9, 5.6); cyl(0.06,0.06,1.0,mat.frame, OX+6.2, 8.9, 5.6);
+
+// คอมเพรสเซอร์แอร์ + ใบพัดหมุน
+const fans = [];
+[[OX+5,-2.5],[OX+1.8,-2.5],[OX-2,-2.5]].forEach(([x,z]) => {
+  box(2.4, 1.0, 1.6, mat.cabinet, x, 9.2, z);
+  const f = new THREE.Group(); f.position.set(x, 9.72, z); scene.add(f);
+  for (let k=0;k<3;k++){ const b = box(1.1, 0.03, 0.22, mat.frame, 0, 0, 0, f, false); b.rotation.y = k*Math.PI/3; }
+  fans.push(f);
+});
+
+/* ================= โกดัง ================= */
+const WX = -10, WZ = 1, WD = 14, WH = 6.5, RISE = 2.2, FRONT = WZ + WD/2;
+box(12, WH, WD, mat.wall, WX, WH/2, WZ);
+for (let x=-5.7; x<=5.7; x+=0.6) box(0.05, WH, 0.06, mat.trim, WX+x, WH/2, FRONT+0.02, scene, false);   // ลอนผนัง
+box(5.2, 4.4, 0.15, mat.door, WX-1.5, 2.2, FRONT+0.08);
+for (let i=0;i<10;i++) box(5.2, 0.04, 0.2, mat.trim, WX-1.5, 0.3+i*0.44, FRONT+0.16, scene, false);
 
 const roofShape = new THREE.Shape();
 roofShape.moveTo(-WD/2-0.4, 0); roofShape.lineTo(WD/2+0.4, 0); roofShape.lineTo(0, RISE); roofShape.closePath();
 const roofGeo = new THREE.ExtrudeGeometry(roofShape, { depth:12.6, bevelEnabled:false });
 roofGeo.rotateY(Math.PI/2);
-const roof = new THREE.Mesh(roofGeo, mat.roofMetal);
+const roof = new THREE.Mesh(roofGeo, mat.roof);
 roof.position.set(WX-6.3, WH, WZ); roof.castShadow = roof.receiveShadow = true; scene.add(roof);
-
-/* ---------- ลอนหลังคาเมทัลชีท ---------- */
 {
   const sl = Math.atan2(RISE, WD/2+0.4), len = Math.hypot(RISE, WD/2+0.4);
   [1,-1].forEach(side => {
     const g = new THREE.Group();
     g.position.set(WX, WH + RISE/2 + 0.03, WZ + side*(WD/2+0.4)/2);
     g.rotation.x = side*sl; scene.add(g);
-    for (let x=-6.1; x<=6.1; x+=0.55) box(0.06, 0.06, len, mat.rib, x, 0, 0, g);
+    for (let x=-6.1; x<=6.1; x+=0.55) box(0.06, 0.06, len, mat.rib, x, 0, 0, g, false);
   });
-  box(12.8, 0.18, 0.3, mat.rib, WX, WH+RISE+0.02, WZ);         // ครอบสันหลังคา
+  box(12.8, 0.18, 0.3, mat.rib, WX, WH+RISE+0.02, WZ);
 }
 
-/* ---------- แผงโซลาร์ 18 แผง ≈ 10 kWp บนหลังคาด้านหน้า ---------- */
+/* ================= แผงโซลาร์ 18 แผง ================= */
 const slope = Math.atan2(RISE, WD/2+0.4);
 const pv = new THREE.Group();
 pv.position.set(WX, WH + RISE/2 + 0.18, WZ + (WD/2+0.4)/2);
@@ -262,92 +354,108 @@ scene.add(pv);
 for (let r=0; r<2; r++) for (let c=0; c<9; c++){
   const x = -4.6 + c*1.15, z = -1.25 + r*2.4;
   box(1.08, 0.05, 2.25, mat.panelFrame, x, 0, z, pv);
-  box(1.0, 0.06, 2.15, mat.panel, x, 0.01, z, pv);
-  box(0.02, 0.065, 2.1, mat.cell, x, 0.012, z, pv);
-  for (let k=-2;k<=2;k++) box(0.98, 0.065, 0.02, mat.cell, x, 0.012, z + k*0.43, pv);
+  box(1.0, 0.06, 2.15, mat.panel, x, 0.01, z, pv, false);
+  box(0.02, 0.065, 2.1, mat.cell, x, 0.012, z, pv, false);
+  for (let k=-2;k<=2;k++) box(0.98, 0.065, 0.02, mat.cell, x, 0.012, z + k*0.43, pv, false);
 }
 
-/* ---------- Inverter, ตู้ MDB, มิเตอร์ IE-01 ---------- */
-const FRONT = WZ + WD/2;
-box(0.55, 0.75, 0.25, mat.white, -5.4, 2.0, FRONT+0.15);     // Huawei SUN2000
-box(0.3, 0.05, 0.02, mat.screen, -5.4, 2.2, FRONT+0.28);
-box(1.4, 2.0, 0.6, mat.cabinet, -7.3, 1.0, FRONT+0.32);       // MDB
-box(0.2, 1.0, 0.8, mat.cabinet, -2.1, 1.6, 3.2);             // ตู้ย่อยผนังข้างสำนักงาน
-box(0.35, 0.3, 0.04, mat.screen, -7.0, 1.5, FRONT+0.63);      // PAC 3100
+/* ================= Inverter, MDB, ตู้ย่อย ================= */
+box(0.55, 0.75, 0.25, mat.white, -5.4, 2.0, FRONT+0.15);
+box(0.3, 0.05, 0.02, mat.screen, -5.4, 2.2, FRONT+0.28, scene, false);
+box(1.4, 2.0, 0.6, mat.cabinet, -7.3, 1.0, FRONT+0.32);
+box(0.35, 0.3, 0.04, mat.screen, -7.0, 1.5, FRONT+0.63, scene, false);
+box(0.2, 1.0, 0.8, mat.cabinet, -2.1, 1.6, 3.2);
 
-/* ---------- เสาไฟฟ้า + หม้อแปลง ---------- */
+/* ================= เสาไฟฟ้า + ไฟถนน ================= */
 const PX = -24, PZ = 15;
-const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.25, 10, 10), mat.pole);
-pole.position.set(PX, 5, PZ); pole.castShadow = true; scene.add(pole);
+cyl(0.18, 0.25, 10, mat.pole, PX, 5, PZ);
 box(2.4, 0.15, 0.15, mat.pole, PX, 9.2, PZ);
-const tx = new THREE.Mesh(new THREE.CylinderGeometry(0.45, 0.45, 1.1, 14), mat.cabinet);
-tx.position.set(PX+0.6, 7.6, PZ); tx.castShadow = true; scene.add(tx);
+cyl(0.45, 0.45, 1.1, mat.cabinet, PX+0.6, 7.6, PZ, 14);
 
-/* ---------- ต้นไม้ ---------- */
-[[18,0,10],[20.5,0,4],[-20,0,-6],[-19,0,10.5],[14,0,-9]].forEach(([x,,z])=>{
-  const t = new THREE.Mesh(new THREE.CylinderGeometry(0.15,0.2,2,6), mat.trunk);
-  t.position.set(x,1,z); t.castShadow = true; scene.add(t);
-  const l = new THREE.Mesh(new THREE.IcosahedronGeometry(1.4,0), (x+z)%2 ? mat.leaf : mat.leaf2);
-  l.position.set(x,2.7,z); l.castShadow = true; scene.add(l);
+const lampLights = [];
+[-34, -12, 4, 22].forEach(x => {
+  cyl(0.08, 0.12, 6, mat.frame, x, 3, 14.4, 8);
+  box(1.4, 0.1, 0.12, mat.frame, x, 5.95, 14.95);
+  const b = box(0.7, 0.12, 0.35, mat.bulb, x, 5.85, 15.6, scene, false);
+  const l = new THREE.PointLight(0xFFD38A, 0, 16, 2); l.position.set(x, 5.4, 15.6); scene.add(l); lampLights.push(l);
 });
 
-/* ---------- เส้นทางพลังงาน ---------- */
-const V = (x,y,z) => new THREE.Vector3(x,y,z);
-const COLORS = { solar:0xFFB300, grid:0x1E7BFF, export:0xFF2A2A, load:0xB24BFF };
+/* ================= รถ ต้นไม้ ================= */
+function car(x, z, body, rot=0){
+  const g = new THREE.Group(); g.position.set(x, 0, z); g.rotation.y = rot; scene.add(g);
+  box(1.8, 0.62, 4.1, body, 0, 0.62, 0, g);
+  box(1.6, 0.55, 2.1, mat.carGlass, 0, 1.18, -0.2, g);
+  box(1.62, 0.08, 2.0, body, 0, 1.48, -0.2, g);
+  [[-0.85,1.3],[0.85,1.3],[-0.85,-1.3],[0.85,-1.3]].forEach(([wx,wz]) => { const w = cyl(0.33,0.33,0.24,mat.tyre,wx,0.33,wz,14,g); w.rotation.z = Math.PI/2; });
+}
+car(0.7, 10.6, mat.carRed); car(3.3, 10.4, mat.carWhite); car(13.1, 10.5, mat.carBlue);
 
-function makePath(points, color, opt={}){
+[[18,10],[20.5,3],[-19,10.5],[-20,-7],[14,-9],[24,-4],[-28,4],[2,-11]].forEach(([x,z],i) => {
+  const s = 0.8 + (i%3)*0.25;
+  cyl(0.15*s, 0.2*s, 2*s, mat.trunk, x, s, z, 6);
+  const l = new THREE.Mesh(new THREE.IcosahedronGeometry(1.4*s, 0), i%2 ? mat.leaf : mat.leaf2);
+  l.position.set(x, 2.6*s, z); l.castShadow = true; scene.add(l);
+});
+
+/* ================= เส้นพลังงาน ================= */
+const V = (x,y,z) => new THREE.Vector3(x,y,z);
+const HEX = { solar:0xFFB300, grid:0x1E7BFF, export:0xFF2A2A, load:0xB24BFF };
+const glowCol = (hex, k) => lin(hex).multiplyScalar(k);
+
+function makePath(points, hex, opt={}){
   let curve;
   if (opt.straight){ curve = new THREE.CurvePath(); for (let i=1;i<points.length;i++) curve.add(new THREE.LineCurve3(points[i-1], points[i])); }
   else curve = new THREE.CatmullRomCurve3(points, false, 'centripetal', 0.2);
   const tube = new THREE.Mesh(new THREE.TubeGeometry(curve, opt.straight ? 400 : 120, opt.r || 0.05, 6, false),
-    new THREE.MeshBasicMaterial({ color, transparent:true, opacity:0.55, toneMapped:false }));
+    new THREE.MeshBasicMaterial({ color:glowCol(hex, 0.9), transparent:true, opacity:0.6, toneMapped:false }));
   scene.add(tube);
   const N = 36;
-  const dots = new THREE.InstancedMesh(new THREE.SphereGeometry(0.17, 12, 10), new THREE.MeshBasicMaterial({ color, toneMapped:false }), N);
-  const glow = new THREE.InstancedMesh(new THREE.SphereGeometry(0.42, 12, 10),
-    new THREE.MeshBasicMaterial({ color, transparent:true, opacity:0.2, blending:THREE.AdditiveBlending, depthWrite:false, toneMapped:false }), N);
+  const dots = new THREE.InstancedMesh(new THREE.SphereGeometry(0.15, 12, 10), new THREE.MeshBasicMaterial({ color:glowCol(hex, 3.2), toneMapped:false }), N);
+  const glow = new THREE.InstancedMesh(new THREE.SphereGeometry(0.36, 12, 10),
+    new THREE.MeshBasicMaterial({ color:glowCol(hex, 1), transparent:true, opacity:0.22, blending:THREE.AdditiveBlending, depthWrite:false, toneMapped:false }), N);
   scene.add(dots, glow);
   return { curve, tube, dots, glow, N, phase:0, kw:0, dir:1, speedK: opt.speedK || 1 };
 }
 const paths = {
-  // เดินสายจากแผง ลงชายคา ไปมุมตึก แล้วลงตามขอบตึกเข้า inverter และตู้ MDB
   solar: makePath([
     V(-5.45, 7.25, 6.95), V(-5.45, 6.62, FRONT+0.42), V(-3.82, 6.62, FRONT+0.42),
     V(-3.82, 6.45, FRONT+0.1), V(-3.82, 2.2, FRONT+0.1), V(-5.1, 2.2, FRONT+0.18),
     V(-5.4, 1.55, FRONT+0.32), V(-6.55, 1.55, FRONT+0.65)
-  ], COLORS.solar, { straight:true, r:0.07, speedK:0.45 }),
-  grid:  makePath([V(PX, 9.3, PZ), V(-16, 7.4, 12.5), V(-8.5, 5.5, FRONT+1.0), V(-7.6, 2.1, FRONT+0.65)], COLORS.grid),
-  // จากตู้ MDB เลียบพื้นเข้าช่องระหว่างตึก แล้วขึ้นเข้าตู้ย่อยที่ผนังข้างสำนักงาน
-  load:  makePath([
+  ], HEX.solar, { straight:true, r:0.07, speedK:0.45 }),
+  grid: makePath([V(PX, 9.3, PZ), V(-16, 7.4, 12.5), V(-8.5, 5.5, FRONT+1.0), V(-7.6, 2.1, FRONT+0.65)], HEX.grid),
+  load: makePath([
     V(-6.6, 0.35, FRONT+0.75), V(-2.75, 0.35, FRONT+0.75), V(-2.75, 0.35, 3.2),
     V(-2.75, 1.6, 3.2), V(-2.2, 1.6, 3.2)
-  ], COLORS.load, { straight:true, r:0.06 })
+  ], HEX.load, { straight:true, r:0.06 })
 };
 
 const tmpM = new THREE.Matrix4(), tmpP = new THREE.Vector3();
 function updatePath(p, dt){
   const active = p.kw > 0.02;
-  p.tube.visible = active;
-  p.glow.visible = active;
-  if (!active){ p.dots.visible = false; return; }
-  p.dots.visible = true;
+  p.tube.visible = p.glow.visible = p.dots.visible = active;
+  if (!active) return;
   const speed = (reduceMotion ? 0.02 : 0.05 + Math.min(p.kw, 12) * 0.022) * p.speedK;
   p.phase = (p.phase + dt * speed * p.dir + 1) % 1;
   const shown = Math.max(6, Math.round(p.N * Math.min(1, 0.25 + p.kw / 8)));
   for (let i=0; i<p.N; i++){
     if (i >= shown){ tmpM.makeScale(0,0,0); p.dots.setMatrixAt(i, tmpM); p.glow.setMatrixAt(i, tmpM); continue; }
     const t = (i / shown + p.phase) % 1;
-    const pt = p.curve.getPointAt(t, tmpP) || tmpP;   // CurvePath คืนค่าใหม่ ไม่ใช้ target
+    const pt = p.curve.getPointAt(t, tmpP) || tmpP;
     tmpM.makeTranslation(pt.x, pt.y, pt.z);
     p.dots.setMatrixAt(i, tmpM); p.glow.setMatrixAt(i, tmpM);
   }
   p.dots.instanceMatrix.needsUpdate = true; p.glow.instanceMatrix.needsUpdate = true;
 }
+function setPathColor(p, hex){
+  p.tube.material.color.copy(glowCol(hex, 0.9));
+  p.dots.material.color.copy(glowCol(hex, 3.2));
+  p.glow.material.color.copy(glowCol(hex, 1));
+}
 
-/* ---------- ป้ายลอย ---------- */
+/* ================= ป้ายลอย ================= */
 const tagLayer = document.getElementById('tags');
 const tags = [];
-function addTag(key, title, color, anchor, focus){
+function addTag(title, color, anchor, focus){
   const el = document.createElement('div');
   el.className = 'tag'; el.tabIndex = 0; el.setAttribute('role','button');
   el.style.setProperty('--c', color);
@@ -356,56 +464,125 @@ function addTag(key, title, color, anchor, focus){
   el.addEventListener('click', go);
   el.addEventListener('keydown', e => { if (e.key==='Enter' || e.key===' '){ e.preventDefault(); go(); } });
   tagLayer.appendChild(el);
-  const t = { key, el, val:el.querySelector('span'), anchor }; tags.push(t); return t;
+  const t = { el, val:el.querySelector('span'), anchor }; tags.push(t); return t;
 }
 const T = {
-  pv:    addTag('pv', 'แผงโซลาร์ 18 แผง', 'var(--solar)', V(WX, 9.6, 4.2)),
-  inv:   addTag('inv','Inverter SUN2000-10KTL', 'var(--solar)', V(-2.6, 6.2, FRONT+0.3), V(-5.4, 2.0, FRONT+0.3)),
-  meter: addTag('meter','ตู้ MDB / มิเตอร์ IE-01', 'var(--grid)', V(-11.2, 1.4, FRONT+0.4), V(-7.3, 1.2, FRONT+0.4)),
-  pole:  addTag('pole','การไฟฟ้า', 'var(--grid)', V(PX, 10.6, PZ)),
-  load:  addTag('load','อาคารสำนักงาน', 'var(--load)', V(OX, 10, 0))
+  pv:    addTag('แผงโซลาร์ 18 แผง', 'var(--solar)', V(WX, 9.6, 4.2)),
+  inv:   addTag('Inverter SUN2000-10KTL', 'var(--solar)', V(-2.6, 6.2, FRONT+0.3), V(-5.4, 2.0, FRONT+0.3)),
+  meter: addTag('ตู้ MDB / มิเตอร์ IE-01', 'var(--grid)', V(-11.2, 1.4, FRONT+0.4), V(-7.3, 1.2, FRONT+0.4)),
+  pole:  addTag('การไฟฟ้า', 'var(--grid)', V(PX, 10.6, PZ)),
+  load:  addTag('อาคารสำนักงาน', 'var(--load)', V(OX, 11.2, 0))
 };
-
 const proj = new THREE.Vector3();
 function placeTags(){
   const w = renderer.domElement.clientWidth, h = renderer.domElement.clientHeight;
   for (const t of tags){
     proj.copy(t.anchor).project(camera);
-    const off = proj.z > 1 || proj.x < -1.1 || proj.x > 1.1 || proj.y < -1.1 || proj.y > 1.1;
+    const off = proj.z > 1 || Math.abs(proj.x) > 1.1 || Math.abs(proj.y) > 1.1;
     t.el.classList.toggle('hidden', off);
     if (!off) t.el.style.transform = `translate(${(proj.x*0.5+0.5)*w}px, ${(-proj.y*0.5+0.5)*h}px) translate(-50%,-100%)`;
   }
 }
-tags.forEach(t => { t.el.style.left = '0'; t.el.style.top = '0'; });
 
-/* ---------- ซูมไปที่อุปกรณ์ ---------- */
+/* ================= กล้อง ================= */
 let tween = null;
+function flyTo(toP, toT, dur=1.2, done){
+  tween = { fromP:camera.position.clone(), toP, fromT:controls.target.clone(), toT, t:0, dur, done };
+}
 function focusOn(target){
   setSpin(false);
   const dir = camera.position.clone().sub(controls.target).normalize();
-  const to = target.clone().add(dir.multiplyScalar(16)).setY(Math.max(target.y + 5, 6));
-  tween = { fromP:camera.position.clone(), toP:to, fromT:controls.target.clone(), toT:target.clone(), t:0 };
+  flyTo(target.clone().add(dir.multiplyScalar(16)).setY(Math.max(target.y + 5, 6)), target.clone());
 }
-function goHome(){ tween = { fromP:camera.position.clone(), toP:HOME.pos.clone(), fromT:controls.target.clone(), toT:HOME.target.clone(), t:0 }; }
-const ease = x => x<.5 ? 2*x*x : 1 - Math.pow(-2*x+2, 2)/2;
-
+const ease = x => x<.5 ? 4*x*x*x : 1 - Math.pow(-2*x+2, 3)/2;
 const btnSpin = document.getElementById('btnSpin');
 function setSpin(on){ controls.autoRotate = on; btnSpin.setAttribute('aria-pressed', String(on)); }
-if (reduceMotion) setSpin(false);
+setSpin(false);
 btnSpin.addEventListener('click', () => setSpin(!controls.autoRotate));
-document.getElementById('btnHome').addEventListener('click', goHome);
-controls.addEventListener('start', () => { tween = null; if (controls.autoRotate) setSpin(false); });
+document.getElementById('btnHome').addEventListener('click', () => flyTo(HOME.pos.clone(), HOME.target.clone()));
+controls.addEventListener('start', () => { if (tween && !tween.intro) tween = null; if (controls.autoRotate) setSpin(false); });
 
-/* ---------- ข้อมูล ---------- */
+/* ================= ช่วงเวลาของวัน ================= */
+const SKY_MODES = [
+  { key:'auto',  label:'บรรยากาศตามเวลาจริง' },
+  { key:'day',   label:'บรรยากาศกลางวัน', hour:13 },
+  { key:'dusk',  label:'บรรยากาศเย็น', hour:17.9 },
+  { key:'night', label:'บรรยากาศกลางคืน', hour:21 }
+];
+let skyIdx = 0;
+document.getElementById('btnSky').addEventListener('click', () => {
+  skyIdx = (skyIdx + 1) % SKY_MODES.length;
+  document.getElementById('btnSky').textContent = SKY_MODES[skyIdx].label;
+  applySky();
+});
+const PAL = {
+  day:   { top:0x2F86E8, hor:0xBFE2FF, sun:0xFFF1D6, hemiSky:0xCFE6FF, hemiGnd:0x6E9E4A },
+  dusk:  { top:0x2B3F7A, hor:0xFFB073, sun:0xFF9A4D, hemiSky:0xF2B48A, hemiGnd:0x4E5E3A },
+  night: { top:0x050B1C, hor:0x1A2A4A, sun:0x8FA8FF, hemiSky:0x2A3C66, hemiGnd:0x10161C }
+};
+const cA = new THREE.Color(), cB = new THREE.Color();
+const mix3 = (key, k1, k2, w1, w2, w3) => {   // ผสมสีจาก 3 ชุด
+  const a = lin(PAL.day[key]), b = lin(PAL.dusk[key]), c = lin(PAL.night[key]);
+  return new THREE.Color(a.r*w1+b.r*w2+c.r*w3, a.g*w1+b.g*w2+c.g*w3, a.b*w1+b.b*w2+c.b*w3);
+};
+function bkkHour(){
+  const d = new Date(); const utc = d.getUTCHours() + d.getUTCMinutes()/60;
+  return (utc + 7) % 24;
+}
+let night = 0;
+const ENV_MATS = [...Object.values(mat), signMat, cloudMat];
+ENV_MATS.forEach(m => m.userData.envBase = m.envMapIntensity);
+function applySky(){
+  const m = SKY_MODES[skyIdx];
+  const h = m.hour != null ? m.hour : bkkHour();
+  const az = Math.PI * (h - 6) / 12;                  // 6 โมงเช้า = ตะวันออก, 6 โมงเย็น = ตะวันตก
+  const elev = Math.sin(az);                           // -1..1
+  const day = THREE.MathUtils.clamp(elev * 2.2, 0, 1);
+  night = THREE.MathUtils.clamp(-elev * 4 + 0.15, 0, 1);
+  const dusk = Math.max(0, 1 - day - night);
+  const w1 = day, w2 = dusk, w3 = night, s = w1+w2+w3 || 1;
+
+  const dir = new THREE.Vector3(Math.cos(az), Math.max(elev, -0.2) * 1.6 + 0.08, 0.55).normalize();
+  if (night > 0.6) dir.set(-0.4, 0.9, 0.35).normalize();       // แสงจันทร์
+  sun.position.copy(dir).multiplyScalar(80);
+  sun.color.copy(mix3('sun',0,0,w1/s,w2/s,w3/s));
+  sun.intensity = 2.3*day + 1.4*dusk + 0.3*night;
+  hemi.color.copy(mix3('hemiSky',0,0,w1/s,w2/s,w3/s));
+  hemi.groundColor.copy(mix3('hemiGnd',0,0,w1/s,w2/s,w3/s));
+  hemi.intensity = 0.75*day + 0.55*dusk + 0.22*night;
+
+  skyMat.uniforms.top.value.copy(mix3('top',0,0,w1/s,w2/s,w3/s));
+  const hor = mix3('hor',0,0,w1/s,w2/s,w3/s);
+  skyMat.uniforms.horizon.value.copy(hor);
+  skyMat.uniforms.sunDir.value.copy(new THREE.Vector3(Math.cos(az), elev, 0.55).normalize());
+  skyMat.uniforms.sunColor.value.copy(mix3('sun',0,0,w1/s,w2/s,w3/s));
+  skyMat.uniforms.sunVis.value = THREE.MathUtils.clamp(elev*5+0.4, 0, 1);
+  scene.fog.color.copy(hor);
+  document.body.style.background = '#' + hor.clone().convertLinearToSRGB().getHexString();
+
+  stars.material.opacity = night;
+  cloudMat.color.copy(lin(0xFFFFFF)).lerp(lin(0x6C7A99), night).lerp(lin(0xFFC8A0), dusk*0.6);
+  mat.windowGlow.emissiveIntensity = night*1.6 + dusk*0.5;
+  mat.bulb.emissiveIntensity = night*6 + dusk*2;
+  lampLights.forEach(l => l.intensity = night*1.6 + dusk*0.5);
+  signMat.emissiveIntensity = 0.12 + night*0.45;
+  mat.accent.emissiveIntensity = 0.15 + night*0.8;
+  renderer.toneMappingExposure = 0.85 + night*0.2;
+  const envK = 0.12 + 0.88*day + 0.35*dusk;               // แสงสะท้อนรอบข้างลดลงตอนกลางคืน
+  ENV_MATS.forEach(m => { m.envMapIntensity = m.userData.envBase * envK; });
+  bloom.strength = 0.55 + night*0.6;
+  document.documentElement.dataset.sky = night > 0.5 ? 'night' : 'day';
+}
+applySky();
+setInterval(() => { if (SKY_MODES[skyIdx].key === 'auto') applySky(); }, 60000);
+
+/* ================= ข้อมูล ================= */
 const $ = id => document.getElementById(id);
 const fmt = (v, d=2) => (v == null || !isFinite(v)) ? '–' : v.toFixed(d);
-
 function parseFields(f){
   const o = {};
-  for (const k in f){
-    const v = f[k];
-    o[k] = v.doubleValue ?? (v.integerValue != null ? Number(v.integerValue) : undefined) ?? v.timestampValue ?? v.stringValue ?? v.booleanValue;
-  }
+  for (const k in f){ const v = f[k];
+    o[k] = v.doubleValue ?? (v.integerValue != null ? Number(v.integerValue) : undefined) ?? v.timestampValue ?? v.stringValue ?? v.booleanValue; }
   return o;
 }
 async function fetchDoc(path){
@@ -414,22 +591,17 @@ async function fetchDoc(path){
   if (!r.ok) throw new Error('HTTP ' + r.status);
   return parseFields((await r.json()).fields || {});
 }
-
-// โซลาร์จำลองตามเวลา ใช้จนกว่าจะต่อ inverter
 function simSolarKw(d = new Date()){
-  const h = d.getHours() + d.getMinutes()/60;
+  const h = bkkHour();
   const s = Math.sin(Math.PI * (h - 6.2) / 12.4);
   if (s <= 0) return 0;
-  const cloud = 0.88 + 0.12 * Math.sin(d.getTime()/90000);
-  return CONFIG.solarKwp * 0.78 * Math.pow(s, 1.25) * cloud;
+  return CONFIG.solarKwp * 0.78 * Math.pow(s, 1.25) * (0.88 + 0.12 * Math.sin(d.getTime()/90000));
 }
 function simLoadKw(d = new Date()){
-  const h = d.getHours() + d.getMinutes()/60, wd = d.getDay();
-  const work = (wd>0 && wd<6 && h>8 && h<18.5) ? 4.2 + 1.2*Math.sin(d.getTime()/300000) : 0.9;
-  return work;
+  const h = bkkHour(), wd = d.getUTCDay();
+  return (wd>0 && wd<6 && h>8 && h<18.5) ? 4.2 + 1.2*Math.sin(d.getTime()/300000) : 0.9;
 }
-
-let state = { mode:'connecting' };
+let state = { mode:'connecting', solarKw:0, gridKw:0, loadKw:0 };
 async function refresh(){
   const now = new Date();
   let meter = null, solarKw = null, solarReal = false, err = null;
@@ -438,7 +610,6 @@ async function refresh(){
     try { const s = await fetchDoc(CONFIG.solarDoc); if (typeof s[CONFIG.solarField] === 'number'){ solarKw = s[CONFIG.solarField]/1000; solarReal = true; } } catch(e){}
   }
   if (solarKw == null) solarKw = simSolarKw(now);
-
   if (meter && typeof meter.p_total === 'number'){
     const gridKw = meter.p_total / 1000;
     const updated = meter.updatedAt ? new Date(meter.updatedAt) : null;
@@ -446,11 +617,10 @@ async function refresh(){
     state = { mode: ageMin > CONFIG.staleMin ? 'stale' : 'live', gridKw, solarKw, solarReal, loadKw: Math.max(0, gridKw + solarKw), meter, ageMin };
   } else {
     const loadKw = simLoadKw(now);
-    state = { mode:'demo', gridKw: loadKw - solarKw, solarKw, solarReal:false, loadKw, meter: { v_ln_avg:231.8, i_avg:6.4, pf_total:0.93, kwh_import:36.59, temp:31.3 }, err };
+    state = { mode:'demo', gridKw: loadKw - solarKw, solarKw, solarReal:false, loadKw, meter:{ v_ln_avg:231.8, i_avg:6.4, pf_total:0.93, kwh_import:36.59, temp:31.3 }, err };
   }
   render();
 }
-
 function ago(min){
   if (!isFinite(min)) return 'ไม่ทราบเวลา';
   if (min < 1) return 'เมื่อสักครู่';
@@ -458,16 +628,13 @@ function ago(min){
   if (min < 1440) return `${Math.round(min/60)} ชั่วโมงที่แล้ว`;
   return `${Math.round(min/1440)} วันที่แล้ว`;
 }
-
 function render(){
   const s = state, m = s.meter || {};
-  const st = $('status');
-  st.className = 'status ' + (s.mode === 'live' ? 'live' : s.mode === 'stale' ? 'stale' : 'demo');
+  $('status').className = 'status ' + (s.mode === 'live' ? 'live' : s.mode === 'stale' ? 'stale' : 'demo');
   $('statusText').textContent =
     s.mode === 'live'  ? `ข้อมูลสดจาก IE-01 อัปเดต${ago(s.ageMin)}` :
     s.mode === 'stale' ? `ข้อมูลค้าง อัปเดตล่าสุด${ago(s.ageMin)}` :
     `โหมดตัวอย่าง อ่าน Firestore ไม่ได้${s.err ? ' (' + s.err.message + ')' : ''}`;
-
   const exporting = s.gridKw < -0.02;
   $('vSolar').textContent = fmt(s.solarKw);
   $('nSolar').textContent = s.solarReal ? `${Math.round(s.solarKw / CONFIG.solarKwp * 100)}% ของกำลังติดตั้ง` : 'ค่าจำลอง ยังไม่ได้ต่อ inverter';
@@ -476,7 +643,6 @@ function render(){
   $('tGrid').style.setProperty('--c', exporting ? 'var(--export)' : 'var(--grid)');
   $('vLoad').textContent = fmt(s.loadKw);
   $('nLoad').textContent = s.loadKw > 0.05 ? `โซลาร์จ่ายได้ ${Math.min(100, Math.round(s.solarKw / s.loadKw * 100))}% ของโหลด` : '';
-
   $('fV').textContent   = m.v_ln_avg != null ? fmt(m.v_ln_avg,1) + ' V' : '–';
   $('fI').textContent   = m.i_avg != null ? fmt(m.i_avg,2) + ' A' : '–';
   $('fPF').textContent  = m.pf_total != null ? fmt(m.pf_total,3) : '–';
@@ -488,43 +654,47 @@ function render(){
   T.meter.val.textContent = (exporting ? '↑ ' : '↓ ') + fmt(Math.abs(s.gridKw)) + ' kW';
   T.pole.val.textContent  = exporting ? 'รับไฟคืน' : 'จ่ายไฟเข้า';
   T.load.val.textContent  = fmt(s.loadKw) + ' kW';
-  T.meter.el.style.setProperty('--c', exporting ? 'var(--export)' : 'var(--grid)');
-  T.pole.el.style.setProperty('--c', exporting ? 'var(--export)' : 'var(--grid)');
+  const gcss = exporting ? 'var(--export)' : 'var(--grid)';
+  T.meter.el.style.setProperty('--c', gcss); T.pole.el.style.setProperty('--c', gcss);
 
-  paths.solar.kw = s.solarKw;
-  paths.load.kw  = s.loadKw;
-  paths.grid.kw  = Math.abs(s.gridKw);
-  paths.grid.dir = exporting ? -1 : 1;
-  const gc = exporting ? COLORS.export : COLORS.grid;
-  paths.grid.dots.material.color.setHex(gc);
-  paths.grid.glow.material.color.setHex(gc);
-  paths.grid.tube.material.color.setHex(gc);
+  paths.solar.kw = s.solarKw; paths.load.kw = s.loadKw;
+  paths.grid.kw = Math.abs(s.gridKw); paths.grid.dir = exporting ? -1 : 1;
+  setPathColor(paths.grid, exporting ? HEX.export : HEX.grid);
+  mat.panel.emissiveIntensity = Math.min(1, s.solarKw / CONFIG.solarKwp) * 0.35;   // แผงเรืองตามกำลังผลิต
 }
 
-/* ---------- วนเฟรม ---------- */
+/* ================= วนเฟรม ================= */
 function resize(){
   const w = stage.clientWidth, h = stage.clientHeight;
   renderer.setSize(w, h, false);
   renderer.domElement.style.width = w + 'px'; renderer.domElement.style.height = h + 'px';
-  camera.aspect = w / h;
-  camera.fov = 40;
-  camera.updateProjectionMatrix();
+  composer.setSize(w, h);
+  camera.aspect = w / h; camera.updateProjectionMatrix();
 }
 addEventListener('resize', resize); resize();
 
+function endIntro(){ document.body.classList.remove('intro'); if (!reduceMotion) setSpin(true); }
+if (reduceMotion) endIntro();
+else { flyTo(HOME.pos.clone(), HOME.target.clone(), 3.2, endIntro); tween.intro = true; }
+
 const clock = new THREE.Clock();
+let useComposer = true, perfN = 0, perfSum = 0;
 function loop(){
-  const dt = Math.min(clock.getDelta(), 0.1);
+  const raw = clock.getDelta(), dt = Math.min(raw, 0.1);
   if (tween){
-    tween.t = Math.min(1, tween.t + dt / 1.2);
+    tween.t = Math.min(1, tween.t + Math.min(raw, 0.5) / tween.dur);
     const k = ease(tween.t);
     camera.position.lerpVectors(tween.fromP, tween.toP, k);
     controls.target.lerpVectors(tween.fromT, tween.toT, k);
-    if (tween.t >= 1) tween = null;
+    if (tween.t >= 1){ const d = tween.done; tween = null; d && d(); }
   }
   controls.update();
   for (const k in paths) updatePath(paths[k], dt);
-  renderer.render(scene, camera);
+  if (!reduceMotion){ fans.forEach(f => f.rotation.y += dt*6); clouds.rotation.y += dt*0.004; }
+  // เครื่องช้า: ปิดแสงเรืองและลดความละเอียดอัตโนมัติ
+  if (useComposer && !tween && perfN < 90){ perfN++; perfSum += raw;
+    if (perfN === 90 && perfSum/90 > 0.045){ useComposer = false; renderer.setPixelRatio(1); resize(); } }
+  if (useComposer) composer.render(); else renderer.render(scene, camera);
   placeTags();
   requestAnimationFrame(loop);
 }
