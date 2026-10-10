@@ -65,6 +65,7 @@ header{ position:fixed; top:calc(env(safe-area-inset-top,0px) + 16px); left:20px
 .bill .amt{ font-family:var(--mono); font-weight:600; font-size:clamp(24px,3.6vw,36px); color:#E46A0C; line-height:1.05; }
 .bill .amt small{ font-size:.5em; color:var(--ink-2); margin-left:4px; }
 .bill .side{ font-size:12.5px; color:var(--ink-2); line-height:1.55; }
+.bill .side a{ color:var(--brand); font-weight:600; }
 .bill .side b{ font-family:var(--mono); color:var(--ink); font-weight:600; }
 .bill .right{ text-align:right; }
 @media (max-width:640px){ .bill{ grid-template-columns:1fr 1fr; } .bill .main{ grid-column:1 / -1; } .bill .right{ text-align:left; } }
@@ -660,25 +661,37 @@ function billCycle(now = new Date()){
   return { start, end };
 }
 const thDate = d => { const b = new Date(d.getTime() + BKK); return `${b.getUTCDate()} ${TH_MON[b.getUTCMonth()]}`; };
-let billBase = null;
+let billBase = null, billErr = null;
 async function loadBillBase(cycle){
+  // เรียงตาม ts แล้วตาม kwh_import: Firestore จะข้ามเอกสารที่ไม่มี kwh_import ให้เอง อ่านแค่ 1 เอกสาร
+  const key = 'ticc_billbase_' + cycle.start.getTime();
+  try { const c = JSON.parse(localStorage.getItem(key) || 'null'); if (c){ billBase = { kwh:c.kwh, ts:new Date(c.ts), cycleStart:cycle.start.getTime(), loadedAt:Date.now() }; return; } } catch(e){}
   const url = `https://firestore.googleapis.com/v1/projects/${CONFIG.project}/databases/(default)/documents/${CONFIG.meterDoc}:runQuery?key=${CONFIG.apiKey}`;
   const body = { structuredQuery:{
     from:[{ collectionId:CONFIG.readingsColl }],
+    select:{ fields:[{ fieldPath:'ts' }, { fieldPath:'kwh_import' }] },
     where:{ fieldFilter:{ field:{ fieldPath:'ts' }, op:'GREATER_THAN_OR_EQUAL', value:{ timestampValue:cycle.start.toISOString() } } },
-    orderBy:[{ field:{ fieldPath:'ts' }, direction:'ASCENDING' }],
-    limit:80 } };
+    orderBy:[{ field:{ fieldPath:'ts' }, direction:'ASCENDING' }, { field:{ fieldPath:'kwh_import' }, direction:'ASCENDING' }],
+    limit:1 } };
   const r = await fetch(url, { method:'POST', headers:{ 'Content-Type':'application/json' }, body:JSON.stringify(body) });
-  if (!r.ok) throw new Error('HTTP ' + r.status);
-  const rows = (await r.json()).filter(x => x.document).map(x => parseFields(x.document.fields || {}));
-  const first = rows.find(f => typeof f.kwh_import === 'number');   // รอบอ่าน kWh มีทุก 15 นาที
+  const j = await r.json().catch(() => null);
+  if (!r.ok){
+    const msg = (j && (j.error || (j[0] && j[0].error)) || {}).message || '';
+    const link = (msg.match(/https:\/\/console\.firebase\.google\.com\S+/) || [])[0];
+    const e = new Error(link ? 'ต้องสร้าง index' : 'HTTP ' + r.status); e.link = link; throw e;
+  }
+  const rows = (j || []).filter(x => x.document).map(x => parseFields(x.document.fields || {}));
+  const first = rows.find(f => typeof f.kwh_import === 'number');
   billBase = first ? { kwh:first.kwh_import, ts:new Date(first.ts), cycleStart:cycle.start.getTime(), loadedAt:Date.now() }
                    : { kwh:null, cycleStart:cycle.start.getTime(), loadedAt:Date.now() };
+  if (first && new Date(first.ts) - cycle.start < 3600000){   // ได้ค่าต้นรอบจริงแล้ว เก็บไว้ไม่ต้องอ่านซ้ำ
+    try { localStorage.setItem(key, JSON.stringify({ kwh:first.kwh_import, ts:first.ts })); } catch(e){}
+  }
 }
 async function updateBill(kwhNow, live){
   const cycle = billCycle();
   if (live && (!billBase || billBase.cycleStart !== cycle.start.getTime() || (billBase.kwh == null && Date.now() - billBase.loadedAt > 15*60000))){
-    try { await loadBillBase(cycle); } catch(e){ billBase = null; }
+    try { await loadBillBase(cycle); billErr = null; } catch(e){ billBase = null; billErr = e; }
   }
   const endShow = new Date(cycle.end.getTime() - 86400000);
   $('billLabel').textContent = `ค่าไฟรอบบิล ${thDate(cycle.start)} – ${thDate(endShow)}`;
@@ -687,7 +700,9 @@ async function updateBill(kwhNow, live){
   if (!live) base = { kwh: Math.max(0, kwhNow - 120), ts: cycle.start };   // โหมดตัวอย่าง
   if (!base || base.kwh == null || typeof kwhNow !== 'number'){
     ['billAmt','billKwh','billProj'].forEach(id => $(id).textContent = '–');
-    $('billSince').textContent = 'ยังไม่มีประวัติ kWh ในรอบนี้';
+    const bs = $('billSince');
+    if (billErr && billErr.link){ bs.innerHTML = 'ต้องสร้าง index ก่อน <a target="_blank" rel="noopener">กดที่นี่</a>'; bs.querySelector('a').href = billErr.link; }
+    else bs.textContent = billErr ? `อ่านประวัติ readings ไม่ได้ (${billErr.message})` : 'ไม่พบค่า kWh ในประวัติรอบนี้';
     return;
   }
   if (base.ts && base.ts - cycle.start > 3600000) since = base.ts;
